@@ -2,7 +2,7 @@
 using CollabBoard.Domain.Entities;
 using CollabBoard.Domain.ValueObjects;
 
-using static Testing;
+using static CollabBoard.Application.FunctionalTests.Testing;
 
 namespace CollabBoard.Application.FunctionalTests.TodoLists.Queries;
 public class GetTodosTests : BaseTestFixture

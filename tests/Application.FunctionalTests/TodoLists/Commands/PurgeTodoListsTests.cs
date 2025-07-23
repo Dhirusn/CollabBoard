@@ -4,7 +4,7 @@ using CollabBoard.Application.TodoLists.Commands.CreateTodoList;
 using CollabBoard.Application.TodoLists.Commands.PurgeTodoLists;
 using CollabBoard.Domain.Entities;
 
-using static Testing;
+using static CollabBoard.Application.FunctionalTests.Testing;
 
 namespace CollabBoard.Application.FunctionalTests.TodoLists.Commands;
 public class PurgeTodoListsTests : BaseTestFixture

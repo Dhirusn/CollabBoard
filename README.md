@@ -1,71 +1,152 @@
-﻿# CollabBoard
+﻿# 🎨 CollabBoard – Real-Time Collaborative Whiteboard & Spreadsheet
 
-The project was generated using the [Clean.Architecture.Solution.Template](https://github.com/jasontaylordev/CleanArchitecture) version 9.0.11.
+> **One link → unlimited creativity.**  
+> Up to **50 concurrent users** per board, **live cursors**, **chat**, **infinite undo/redo**, **history replay**, and **Microsoft-Office-style drawing tools**.
 
-## Build
+---
 
-Run `dotnet build -tl` to build the solution.
+## 🌟 Features
 
-## Run
+| Area | Highlights |
+|------|------------|
+| **Drawing & Editing** | Free-hand, shapes, lines, text, sticky notes, images, Excel-like cell grid, zoom & pan |
+| **Live Collaboration** | Sub-second real-time sync via SignalR + Azure SignalR Service |
+| **Presence & Chat** | Side-pane with online members list and instant messaging |
+| **History & Audit** | Every stroke / cell change saved → full replay timeline |
+| **Sharing** | Public or invite-only boards with role-based access (viewer / editor / owner) |
+| **Performance** | Optimistic locking, row versioning, snapshots, OT/CRDT hybrid model |
 
-To run the web application:
+---
+
+## 🏗️ Architecture
+
+```text
+┌──────────────┐   ┌──────────────┐   ┌──────────────┐
+│   Angular    │⇄ │   .NET 9     │⇄ │ PostgreSQL   │
+│   (SPA)      │   │  Web API     │   │   + Redis    │
+└──────────────┘   └──────────────┘   └──────────────┘
+         ⇅ SignalR            ⇅ EF Core
+         ⇅ Yjs / OT           ⇅ Snapshot service
+```
+
+- **Clean Architecture** with layered separation  
+- **CQRS + MediatR** for commands and queries  
+- **EF Core 9 + PostgreSQL** as the source of truth  
+- **Redis** for user presence and in-memory sync  
+- **Azure Container Apps** + **Azure SignalR** for scalable real-time infrastructure
+
+---
+
+## 🚀 Quick Start
+
+### 1. Clone & Run Backend
+```bash
+git clone https://github.com/<you>/CollabBoard.git
+cd backend
+cp .env.example .env           # optional: edit DB passwords
+docker compose up -d           # start Postgres + Redis
+dotnet restore
+dotnet ef database update --project src/CollabBoard.Infrastructure --startup-project src/CollabBoard.Api
+dotnet run --project src/CollabBoard.Api --launch-profile "https"
+```
+
+### 2. Start Angular App
+```bash
+cd ../whiteboard-ui
+npm ci
+npm start
+```
+
+Open `https://localhost:4200` → create a board → collaborate live.
+
+---
+
+## 📦 Tech Stack
+
+| Layer | Technology |
+|-------|------------|
+| **Front-end** | Angular 19, TypeScript, KonvaJS, Yjs |
+| **Back-end**  | .NET 9, ASP.NET Core, SignalR, EF Core 9 |
+| **Database**  | PostgreSQL 16 (code-first), Redis (presence) |
+| **Infrastructure** | Docker, Azure Container Apps, Azure SignalR Service |
+| **DevOps**    | GitHub Actions, Bicep / AZD |
+| **Patterns**  | Clean Architecture, CQRS, Optimistic Locking, Snapshotting, Event-Driven |
+
+---
+
+## 🧩 Database Entity Overview
+
+All entities inherit from `BaseEntity<T>` with `Id`, `CreatedUtc`, `UpdatedUtc`, and `DomainEvents`.
+
+### 👥 Core Relationships
+
+```text
+AppUser 1─►* BoardMember *◄─Board 1─►* Page *─►* ContentBlock
+                                │
+                                ├──►* ChatMessage
+                                ├──►* OperationLog
+                                └──►* Snapshot (latest only)
+```
+
+### 📊 Key Tables
+
+| Table | Description |
+|-------|-------------|
+| `AppUsers` | Registered users with name/email |
+| `Boards` | Collaboration spaces (canvas) |
+| `BoardMembers` | Join table for user-board roles |
+| `Pages` | Multi-page board support |
+| `ContentBlocks` | JSON-based shapes, text, images, etc. |
+| `ChatMessages` | In-board messaging |
+| `OperationLogs` | Deltas for undo/redo/history replay |
+| `Snapshots` | Gzipped JSON of full board state |
+| `Presence` | Redis-powered live user tracking |
+
+---
+
+## ⚙️ Development Scripts
+
+| Command | Description |
+|---------|-------------|
+| `dotnet ef migrations add <name>` | Add new EF Core migration |
+| `dotnet ef database update` | Apply migrations to DB |
+| `dotnet test` | Run backend unit & integration tests |
+| `npm run test` | Run frontend unit tests |
+| `azd up` | One-command full Azure deployment |
+
+---
+
+## 🛡️ Security & Reliability
+
+- ✅ JWT authentication (Azure AD / IdentityServer ready)  
+- ✅ Role-based access (owner / editor / viewer)  
+- ✅ Row-level optimistic locking via EF Core `IsRowVersion()`  
+- ✅ PostgreSQL indexes: BRIN (replay), GIN (search in JSON), covering indexes  
+- ✅ HTTPS with CSP & secure headers  
+- ✅ Optional rate-limiting middleware for API abuse prevention  
+
+---
+
+## ☁️ Azure Cloud Deploy (Optional)
 
 ```bash
-cd .\src\Web\
-dotnet watch run
+azd init         # configure subscription and environment
+azd provision    # spin up infrastructure (Postgres, SignalR, ACA)
+azd deploy       # deploy app to Azure
 ```
 
-Navigate to https://localhost:5001. The application will automatically reload if you change any of the source files.
+Get public board URL after 2–3 minutes.
 
-## Code Styles & Formatting
+---
 
-The template includes [EditorConfig](https://editorconfig.org/) support to help maintain consistent coding styles for multiple developers working on the same project across various editors and IDEs. The **.editorconfig** file defines the coding styles applicable to this solution.
+## 📄 License
 
-## Code Scaffolding
+MIT – free for commercial or personal use.
 
-The template includes support to scaffold new commands and queries.
+---
 
-Start in the `.\src\Application\` folder.
+## 🤝 Contributing
 
-Create a new command:
+PRs welcome! Open an issue first if it's a large change or architectural refactor.
 
-```
-dotnet new ca-usecase --name CreateTodoList --feature-name TodoLists --usecase-type command --return-type int
-```
-
-Create a new query:
-
-```
-dotnet new ca-usecase -n GetTodos -fn TodoLists -ut query -rt TodosVm
-```
-
-If you encounter the error *"No templates or subcommands found matching: 'ca-usecase'."*, install the template and try again:
-
-```bash
-dotnet new install Clean.Architecture.Solution.Template::9.0.11
-```
-
-## Test
-
-The solution contains unit, integration, functional, and acceptance tests.
-
-To run the unit, integration, and functional tests (excluding acceptance tests):
-```bash
-dotnet test --filter "FullyQualifiedName!~AcceptanceTests"
-```
-
-To run the acceptance tests, first start the application:
-
-```bash
-cd .\src\Web\
-dotnet run
-```
-
-Then, in a new console, run the tests:
-```bash
-cd .\src\Web\
-dotnet test
-```
-
-## Help
-To learn more about the template go to the [project website](https://github.com/jasontaylordev/CleanArchitecture). Here you can find additional guidance, request new features, report a bug, and discuss the template with other users.
+---

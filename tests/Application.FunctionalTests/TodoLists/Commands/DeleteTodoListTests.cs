@@ -2,7 +2,7 @@
 using CollabBoard.Application.TodoLists.Commands.DeleteTodoList;
 using CollabBoard.Domain.Entities;
 
-using static Testing;
+using static CollabBoard.Application.FunctionalTests.Testing;
 
 namespace CollabBoard.Application.FunctionalTests.TodoLists.Commands;
 public class DeleteTodoListTests : BaseTestFixture

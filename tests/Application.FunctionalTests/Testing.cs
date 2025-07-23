@@ -1,4 +1,5 @@
 ﻿using CollabBoard.Domain.Constants;
+using CollabBoard.Domain.Entities;
 using CollabBoard.Infrastructure.Data;
 using CollabBoard.Infrastructure.Identity;
 using MediatR;

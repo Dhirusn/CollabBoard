@@ -1,12 +1,15 @@
 ﻿using System.ComponentModel.DataAnnotations.Schema;
+using Microsoft.AspNetCore.Identity;
 
-namespace CollabBoard.Domain.Common;
-public abstract class BaseEntity<T> : BaseAuditableEntity, IDomainEvent
+namespace CollabBoard.Domain.Entities;
+public class ApplicationUser : IdentityUser, IAuditableEntity, IDomainEvent
 {
-    // This can easily be modified to be BaseEntity<T> and public T Id to support different key types.
-    // Using non-generic integer types for simplicity
-    public T? Id { get; set; }
-
+    public string DisplayName { get; set; } = string.Empty;
+    public string? AvatarUrl { get; set; }
+    public DateTimeOffset Created { get; set; }
+    public string? CreatedBy { get; set; }
+    public DateTimeOffset LastModified { get; set; }
+    public string? LastModifiedBy { get; set; }
     private readonly List<BaseEvent> _domainEvents = new();
 
     [NotMapped]

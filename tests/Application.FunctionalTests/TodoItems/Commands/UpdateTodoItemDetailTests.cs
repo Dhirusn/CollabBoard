@@ -5,7 +5,7 @@ using CollabBoard.Application.TodoLists.Commands.CreateTodoList;
 using CollabBoard.Domain.Entities;
 using CollabBoard.Domain.Enums;
 
-using static Testing;
+using static CollabBoard.Application.FunctionalTests.Testing;
 
 namespace CollabBoard.Application.FunctionalTests.TodoItems.Commands;
 public class UpdateTodoItemDetailTests : BaseTestFixture

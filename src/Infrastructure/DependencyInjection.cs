@@ -1,5 +1,6 @@
 ﻿using CollabBoard.Application.Common.Interfaces;
 using CollabBoard.Domain.Constants;
+using CollabBoard.Domain.Entities;
 using CollabBoard.Infrastructure.Data;
 using CollabBoard.Infrastructure.Data.Interceptors;
 using CollabBoard.Infrastructure.Identity;

@@ -1,6 +1,6 @@
 ﻿namespace CollabBoard.Domain.Entities;
 
-public class TodoItem : BaseAuditableEntity
+public class TodoItem : BaseEntity<int> 
 {
     public int ListId { get; set; }
 

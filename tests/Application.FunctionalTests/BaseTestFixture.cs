@@ -1,6 +1,6 @@
 ﻿namespace CollabBoard.Application.FunctionalTests;
 
-using static Testing;
+using static CollabBoard.Application.FunctionalTests.Testing;
 
 [TestFixture]
 public abstract class BaseTestFixture

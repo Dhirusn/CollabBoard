@@ -1,5 +1,6 @@
 using CollabBoard.Application.Common.Interfaces;
 using CollabBoard.Application.Common.Models;
+using CollabBoard.Domain.Entities;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;

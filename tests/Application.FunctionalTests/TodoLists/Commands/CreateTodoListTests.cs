@@ -2,7 +2,7 @@
 using CollabBoard.Application.TodoLists.Commands.CreateTodoList;
 using CollabBoard.Domain.Entities;
 
-using static Testing;
+using static CollabBoard.Application.FunctionalTests.Testing;
 
 namespace CollabBoard.Application.FunctionalTests.TodoLists.Commands;
 public class CreateTodoListTests : BaseTestFixture

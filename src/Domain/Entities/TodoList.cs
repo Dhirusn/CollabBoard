@@ -1,6 +1,6 @@
 ﻿namespace CollabBoard.Domain.Entities;
 
-public class TodoList : BaseAuditableEntity
+public class TodoList : BaseEntity<int>
 {
     public string? Title { get; set; }
 
