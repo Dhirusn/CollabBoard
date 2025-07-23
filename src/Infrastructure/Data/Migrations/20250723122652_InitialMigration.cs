@@ -306,7 +306,6 @@ namespace CollabBoard.Infrastructure.Data.Migrations
                     Operation = table.Column<string>(type: "character varying(20)", maxLength: 20, nullable: false),
                     Delta = table.Column<string>(type: "jsonb", nullable: false),
                     Timestamp = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
-                    BoardId1 = table.Column<Guid>(type: "uuid", nullable: false),
                     Created = table.Column<DateTimeOffset>(type: "timestamp with time zone", nullable: false),
                     CreatedBy = table.Column<string>(type: "text", nullable: true),
                     LastModified = table.Column<DateTimeOffset>(type: "timestamp with time zone", nullable: false),
@@ -323,12 +322,6 @@ namespace CollabBoard.Infrastructure.Data.Migrations
                     table.ForeignKey(
                         name: "FK_OperationLogs_Boards_BoardId",
                         column: x => x.BoardId,
-                        principalTable: "Boards",
-                        principalColumn: "Id",
-                        onDelete: ReferentialAction.Cascade);
-                    table.ForeignKey(
-                        name: "FK_OperationLogs_Boards_BoardId1",
-                        column: x => x.BoardId1,
                         principalTable: "Boards",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
@@ -365,7 +358,7 @@ namespace CollabBoard.Infrastructure.Data.Migrations
                     BoardId = table.Column<Guid>(type: "uuid", nullable: false),
                     PagesBlob = table.Column<string>(type: "jsonb", nullable: false),
                     TakenUtc = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
-                    BoardId1 = table.Column<Guid>(type: "uuid", nullable: false),
+                    BoardId1 = table.Column<Guid>(type: "uuid", nullable: true),
                     Created = table.Column<DateTimeOffset>(type: "timestamp with time zone", nullable: false),
                     CreatedBy = table.Column<string>(type: "text", nullable: true),
                     LastModified = table.Column<DateTimeOffset>(type: "timestamp with time zone", nullable: false),
@@ -384,8 +377,7 @@ namespace CollabBoard.Infrastructure.Data.Migrations
                         name: "FK_Snapshots_Boards_BoardId1",
                         column: x => x.BoardId1,
                         principalTable: "Boards",
-                        principalColumn: "Id",
-                        onDelete: ReferentialAction.Cascade);
+                        principalColumn: "Id");
                 });
 
             migrationBuilder.CreateTable(
@@ -502,11 +494,6 @@ namespace CollabBoard.Infrastructure.Data.Migrations
                 table: "OperationLogs",
                 columns: new[] { "BoardId", "Timestamp" })
                 .Annotation("Npgsql:IndexMethod", "BRIN");
-
-            migrationBuilder.CreateIndex(
-                name: "IX_OperationLogs_BoardId1",
-                table: "OperationLogs",
-                column: "BoardId1");
 
             migrationBuilder.CreateIndex(
                 name: "IX_OperationLogs_UserId",

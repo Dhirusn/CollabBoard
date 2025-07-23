@@ -22,10 +22,10 @@ public class OperationLogConfiguration : IEntityTypeConfiguration<OperationLog>
                .HasColumnType("jsonb")
                .IsRequired();
 
-        builder.HasOne<Board>()
+        builder.HasOne(ol => ol.Board)
                .WithMany()
-               .HasForeignKey(ol => ol.BoardId)
-               .OnDelete(DeleteBehavior.Cascade);
+                    .HasForeignKey(o => o.BoardId)
+         .OnDelete(DeleteBehavior.Cascade);
 
         builder.HasIndex(ol => new { ol.BoardId, ol.Timestamp })
                .HasMethod("BRIN");

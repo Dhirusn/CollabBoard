@@ -46,7 +46,8 @@ cd backend
 cp .env.example .env           # optional: edit DB passwords
 docker compose up -d           # start Postgres + Redis
 dotnet restore
-dotnet ef database update --project src/CollabBoard.Infrastructure --startup-project src/CollabBoard.Api
+dotnet ef migrations add "InitialMigration" --project ..\Infrastructure\Infrastructure.csproj --startup-project .\Web.csproj --output-dir Data\Migrations
+dotnet ef database update 
 dotnet run --project src/CollabBoard.Api --launch-profile "https"
 ```
 

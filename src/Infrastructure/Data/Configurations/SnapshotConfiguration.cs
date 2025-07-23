@@ -18,5 +18,11 @@ public class SnapshotConfiguration : IEntityTypeConfiguration<Snapshot>
                .OnDelete(DeleteBehavior.Cascade);
 
         builder.HasIndex(s => new { s.BoardId, s.TakenUtc });
+
+        builder.HasOne(s => s.Board)
+                .WithMany()
+                .HasForeignKey(s => s.BoardId)
+               .OnDelete(DeleteBehavior.Cascade);
+
     }
 }

@@ -12,7 +12,7 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace CollabBoard.Infrastructure.Data.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    [Migration("20250723100226_InitialMigration")]
+    [Migration("20250723122652_InitialMigration")]
     partial class InitialMigration
     {
         /// <inheritdoc />
@@ -307,9 +307,6 @@ namespace CollabBoard.Infrastructure.Data.Migrations
                     b.Property<Guid>("BoardId")
                         .HasColumnType("uuid");
 
-                    b.Property<Guid>("BoardId1")
-                        .HasColumnType("uuid");
-
                     b.Property<DateTimeOffset>("Created")
                         .HasColumnType("timestamp with time zone");
 
@@ -346,8 +343,6 @@ namespace CollabBoard.Infrastructure.Data.Migrations
                         .HasColumnType("text");
 
                     b.HasKey("Id");
-
-                    b.HasIndex("BoardId1");
 
                     b.HasIndex("UserId");
 
@@ -398,7 +393,7 @@ namespace CollabBoard.Infrastructure.Data.Migrations
                     b.Property<Guid>("BoardId")
                         .HasColumnType("uuid");
 
-                    b.Property<Guid>("BoardId1")
+                    b.Property<Guid?>("BoardId1")
                         .HasColumnType("uuid");
 
                     b.Property<DateTimeOffset>("Created")
@@ -700,15 +695,9 @@ namespace CollabBoard.Infrastructure.Data.Migrations
 
             modelBuilder.Entity("CollabBoard.Domain.Entities.OperationLog", b =>
                 {
-                    b.HasOne("CollabBoard.Domain.Entities.Board", null)
-                        .WithMany()
-                        .HasForeignKey("BoardId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
                     b.HasOne("CollabBoard.Domain.Entities.Board", "Board")
                         .WithMany()
-                        .HasForeignKey("BoardId1")
+                        .HasForeignKey("BoardId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
@@ -734,17 +723,15 @@ namespace CollabBoard.Infrastructure.Data.Migrations
 
             modelBuilder.Entity("CollabBoard.Domain.Entities.Snapshot", b =>
                 {
-                    b.HasOne("CollabBoard.Domain.Entities.Board", null)
-                        .WithMany("Snapshots")
+                    b.HasOne("CollabBoard.Domain.Entities.Board", "Board")
+                        .WithMany()
                         .HasForeignKey("BoardId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.HasOne("CollabBoard.Domain.Entities.Board", "Board")
-                        .WithMany()
-                        .HasForeignKey("BoardId1")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
+                    b.HasOne("CollabBoard.Domain.Entities.Board", null)
+                        .WithMany("Snapshots")
+                        .HasForeignKey("BoardId1");
 
                     b.Navigation("Board");
                 });
