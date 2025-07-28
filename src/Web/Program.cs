@@ -1,4 +1,5 @@
 using CollabBoard.Infrastructure.Data;
+using CollabBoard.Web.Hubs;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -36,6 +37,7 @@ app.MapRazorPages();
 app.MapFallbackToFile("index.html");
 
 app.UseExceptionHandler(options => { });
+app.MapHub<CollabHub>("/hubs/collab");
 
 
 app.MapDefaultEndpoints();

@@ -1,4 +1,5 @@
-﻿using CollabBoard.Application.Common.Interfaces;
+﻿using CleanAspire.Infrastructure.Startup;
+using CollabBoard.Application.Common.Interfaces;
 using CollabBoard.Domain.Constants;
 using CollabBoard.Domain.Entities;
 using CollabBoard.Infrastructure.Data;
@@ -32,6 +33,9 @@ public static class DependencyInjection
         builder.Services.AddScoped<IApplicationDbContext>(provider => provider.GetRequiredService<ApplicationDbContext>());
 
         builder.Services.AddScoped<ApplicationDbContextInitialiser>();
+
+
+        //builder.Services.AddHostedService<DatabaseInitializer>();
 
         builder.Services
             .AddDefaultIdentity<ApplicationUser>()

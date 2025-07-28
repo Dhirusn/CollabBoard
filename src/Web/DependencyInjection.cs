@@ -31,6 +31,8 @@ public static class DependencyInjection
             configure.Title = "CollabBoard API";
 
         });
+        
+        builder.Services.AddSignalR();
     }
 
     public static void AddKeyVaultIfConfigured(this IHostApplicationBuilder builder)

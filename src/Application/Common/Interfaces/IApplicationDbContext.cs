@@ -7,5 +7,13 @@ public interface IApplicationDbContext
 
     DbSet<TodoItem> TodoItems { get; }
 
+    public DbSet<Board> Boards { get; }
+    public DbSet<BoardMember> BoardsMember { get; }
+    public DbSet<ChatMessage> ChatMessages { get; }
+    public DbSet<ContentBlock> ContentBlocks { get; }
+    public DbSet<OperationLog> OperationLogs { get; }
+    public DbSet<Page> Pages { get; }
+    public DbSet<Snapshot> Snapshots { get; }
+
     Task<int> SaveChangesAsync(CancellationToken cancellationToken);
 }

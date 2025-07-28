@@ -114,7 +114,26 @@ AppUser 1─►* BoardMember *◄─Board 1─►* Page *─►* ContentBlock
 | `dotnet test` | Run backend unit & integration tests |
 | `npm run test` | Run frontend unit tests |
 | `azd up` | One-command full Azure deployment |
+| `azd up` | One-command full Azure deployment |
 
+
+## ⚙️ For Migration in database 
+
+### project that contains the DbContext
+`cd src/CleanAspire.Infrastructure`
+
+### create migration
+`dotnet ef migrations add InitialCreate \
+        --startup-project ../CleanAspire.Api \
+        --project . \
+        --context ApplicationDbContext \
+        --output-dir Persistence/Migrations \
+        --connection "Host=localhost;Port=<port-from-dashboard>;Database=appdb;Username=postgres;Password=<password-from-dashboard>"`
+
+### update database
+`dotnet ef database update \
+        --context ApplicationDbContext \
+        --connection "Host=localhost;Port=<port-from-dashboard>;Database=appdb;Username=postgres;Password=<password-from-dashboard>"`
 ---
 
 ## 🛡️ Security & Reliability

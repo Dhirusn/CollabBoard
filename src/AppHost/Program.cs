@@ -1,17 +1,18 @@
-﻿var builder = DistributedApplication.CreateBuilder(args);
+﻿using Aspire.Hosting;
 
-var databaseName = "CollabBoardDb";
+var builder = DistributedApplication.CreateBuilder(args);
 
-var postgres = builder
-    .AddPostgres("postgres", port: 5432) // add this
-    .WithEnvironment("POSTGRES_DB", databaseName)
-    .WithDataVolume();
+//var databaseName = "CollabBoardDb";
+//var userParam = builder.AddParameter("pgUser", value: "postgres");
+//var passParam = builder.AddParameter("pgPass", value: "wWMtNU*Y5QDC58fUNVC7b6");
 
+//var postgres = builder
+//    .AddPostgres("postgres", userParam, passParam, 5432)
+//    .WithEnvironment("POSTGRES_DB", databaseName)
+//    .WithDataVolume();
 
-var database = postgres.AddDatabase(databaseName);
+//var database = postgres.AddDatabase(databaseName);
 
-builder.AddProject<Projects.Web>("web")
-    .WithReference(database)
-    .WaitFor(database);
+builder.AddProject<Projects.Web>("web");
 
 builder.Build().Run();
