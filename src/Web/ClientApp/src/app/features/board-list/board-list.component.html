@@ -1,0 +1,23 @@
+<div class="board-list-container">
+  <h2>My Boards</h2>
+
+  <div class="create-board">
+    <input [(ngModel)]="newBoardTitle" placeholder="Enter board title" />
+    <button (click)="createBoard()" [disabled]="!newBoardTitle.trim()">Create</button>
+  </div>
+
+  <ul>
+    <li *ngFor="let board of boards">
+      <div *ngIf="editingBoardId !== board.id" (click)="navigateToBoard(board.id)">
+        <strong>{{ board.title }}</strong>
+        <button (click)="startEditing(board.id, board.title); $event.stopPropagation();">✏️ Edit</button>
+      </div>
+
+      <div *ngIf="editingBoardId === board.id">
+        <input [(ngModel)]="updatedTitle" />
+        <button (click)="saveUpdatedTitle(board.id)">💾 Save</button>
+        <button (click)="editingBoardId = null">❌ Cancel</button>
+      </div>
+    </li>
+  </ul>
+</div>

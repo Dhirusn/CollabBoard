@@ -138,6 +138,60 @@ namespace CollabBoard.Infrastructure.Data.Migrations
                     b.ToTable("Boards");
                 });
 
+            modelBuilder.Entity("CollabBoard.Domain.Entities.BoardInvitation", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<Guid>("BoardId")
+                        .HasColumnType("uuid");
+
+                    b.Property<DateTimeOffset>("Created")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("CreatedBy")
+                        .HasColumnType("text");
+
+                    b.Property<string>("InvitedByUserId")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<DateTimeOffset>("LastModified")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("LastModifiedBy")
+                        .HasColumnType("text");
+
+                    b.Property<string>("RequestedRole")
+                        .IsRequired()
+                        .HasMaxLength(20)
+                        .HasColumnType("character varying(20)");
+
+                    b.Property<DateTime?>("RespondedUtc")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("Status")
+                        .IsRequired()
+                        .HasMaxLength(20)
+                        .HasColumnType("character varying(20)");
+
+                    b.Property<string>("TargetUserId")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("InvitedByUserId");
+
+                    b.HasIndex("TargetUserId");
+
+                    b.HasIndex("BoardId", "TargetUserId", "Status")
+                        .HasDatabaseName("IX_BoardInvitation_Board_Target_Status");
+
+                    b.ToTable("BoardInvitations");
+                });
+
             modelBuilder.Entity("CollabBoard.Domain.Entities.BoardMember", b =>
                 {
                     b.Property<Guid>("Id")
@@ -175,7 +229,7 @@ namespace CollabBoard.Infrastructure.Data.Migrations
                     b.HasIndex("BoardId", "UserId")
                         .IsUnique();
 
-                    b.ToTable("BoardsMember");
+                    b.ToTable("BoardsMembers");
                 });
 
             modelBuilder.Entity("CollabBoard.Domain.Entities.ChatMessage", b =>
@@ -642,6 +696,29 @@ namespace CollabBoard.Infrastructure.Data.Migrations
                         .OnDelete(DeleteBehavior.Restrict);
 
                     b.Navigation("Owner");
+                });
+
+            modelBuilder.Entity("CollabBoard.Domain.Entities.BoardInvitation", b =>
+                {
+                    b.HasOne("CollabBoard.Domain.Entities.Board", "Board")
+                        .WithMany()
+                        .HasForeignKey("BoardId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("CollabBoard.Domain.Entities.ApplicationUser", null)
+                        .WithMany()
+                        .HasForeignKey("InvitedByUserId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("CollabBoard.Domain.Entities.ApplicationUser", null)
+                        .WithMany()
+                        .HasForeignKey("TargetUserId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.Navigation("Board");
                 });
 
             modelBuilder.Entity("CollabBoard.Domain.Entities.BoardMember", b =>

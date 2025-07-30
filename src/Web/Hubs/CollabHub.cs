@@ -4,38 +4,27 @@ namespace CollabBoard.Web.Hubs;
 
 public class CollabHub : Hub
 {
-    public async Task JoinBoard(Guid boardId)
+    public async Task BroadcastUpdate(string roomId, byte[] update)
     {
-        await Groups.AddToGroupAsync(Context.ConnectionId, boardId.ToString());
+        await Clients.OthersInGroup(roomId).SendAsync("ReceiveUpdate", update);
     }
 
-    public async Task SendBlockEdit(Guid boardId, object block)
+    public async Task BroadcastAwareness(string roomId, byte[] awarenessUpdate)
     {
-        await Clients.OthersInGroup(boardId.ToString()).SendAsync("ReceiveBlockEdit", block);
+        await Clients.OthersInGroup(roomId).SendAsync("ReceiveAwareness", awarenessUpdate);
     }
 
-    public async Task SendBlockDelete(Guid boardId, Guid blockId)
+    public override async Task OnConnectedAsync()
     {
-        await Clients.OthersInGroup(boardId.ToString()).SendAsync("ReceiveBlockDelete", blockId);
+        var roomId = Context.GetHttpContext()!.Request.Query["roomId"];
+        await Groups.AddToGroupAsync(Context.ConnectionId, roomId!);
+        await base.OnConnectedAsync();
     }
 
-    public async Task SendCursorMove(Guid boardId, string userId, object cursor)
+    public override async Task OnDisconnectedAsync(Exception? exception)
     {
-        await Clients.OthersInGroup(boardId.ToString()).SendAsync("ReceiveCursorMove", userId, cursor);
-    }
-
-    public async Task Undo(Guid boardId)
-    {
-        await Clients.OthersInGroup(boardId.ToString()).SendAsync("ReceiveUndo");
-    }
-
-    public async Task Redo(Guid boardId)
-    {
-        await Clients.OthersInGroup(boardId.ToString()).SendAsync("ReceiveRedo");
-    }
-
-    public async Task SendChatMessage(Guid boardId, object message)
-    {
-        await Clients.OthersInGroup(boardId.ToString()).SendAsync("ReceiveChatMessage", message);
+        var roomId = Context.GetHttpContext()!.Request.Query["roomId"];
+        await Groups.RemoveFromGroupAsync(Context.ConnectionId, roomId!);
+        await base.OnDisconnectedAsync(exception);
     }
 }

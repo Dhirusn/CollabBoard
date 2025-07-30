@@ -1,0 +1,35 @@
+<div class="board-container">
+  <!-- Left Tool Panel -->
+  <div class="tools-pane" [class.collapsed]="!showTools">
+    <button (click)="toggleTools()">
+      {{ showTools ? '◀ Hide' : '▶ Show' }}
+    </button>
+    <div *ngIf="showTools" class="tool-list">
+      <button>✏️ Pencil</button>
+      <button>🔲 Rect</button>
+      <button>🔤 Text</button>
+      <button (click)="zoomIn()">➕ Zoom In</button>
+      <button (click)="zoomOut()">➖ Zoom Out</button>
+      <!-- In toolbar buttons -->
+      <button [class.active]="currentTool === 'pen'" (click)="selectTool('pen')">
+        ✏️ Pen
+      </button>
+
+    </div>
+  </div>
+
+  <!-- Center Canvas -->
+  <div class="canvas-pane">
+    <!-- <app-canvas [zoom]="zoomLevel"></app-canvas> -->
+  </div>
+
+  <!-- Right Chat Panel -->
+  <div class="chat-pane" [class.collapsed]="!showChat">
+    <button (click)="toggleChat()">
+      {{ showChat ? 'Hide Chat ▶' : 'Show Chat ◀' }}
+    </button>
+    <div *ngIf="showChat">
+      <app-chat></app-chat>
+    </div>
+  </div>
+</div>

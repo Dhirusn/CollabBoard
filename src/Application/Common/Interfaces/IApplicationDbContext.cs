@@ -8,7 +8,8 @@ public interface IApplicationDbContext
     DbSet<TodoItem> TodoItems { get; }
 
     public DbSet<Board> Boards { get; }
-    public DbSet<BoardMember> BoardsMember { get; }
+    public DbSet<BoardInvitation> BoardInvitations { get; }
+    public DbSet<BoardMember> BoardsMembers { get; }
     public DbSet<ChatMessage> ChatMessages { get; }
     public DbSet<ContentBlock> ContentBlocks { get; }
     public DbSet<OperationLog> OperationLogs { get; }

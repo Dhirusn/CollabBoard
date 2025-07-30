@@ -3,6 +3,7 @@ using CollabBoard.Application.Common.Interfaces;
 using CollabBoard.Infrastructure.Data;
 using CollabBoard.Web.Services;
 using Microsoft.AspNetCore.Mvc;
+using Serilog;
 
 
 namespace Microsoft.Extensions.DependencyInjection;
@@ -10,6 +11,18 @@ public static class DependencyInjection
 {
     public static void AddWebServices(this IHostApplicationBuilder builder)
     {
+        var connectionString = builder.Configuration.GetConnectionString("CollabBoardDb");
+
+        Log.Logger = new LoggerConfiguration()
+            .ReadFrom.Configuration(builder.Configuration)   // optional: appsettings.json
+            .Enrich.FromLogContext()
+            .WriteTo.PostgreSQL(
+                connectionString: connectionString,
+                tableName: "logs",
+                columnOptions: SerilogColumnWriters.Map,
+                needAutoCreateTable: false)                   // we already created it
+            .CreateLogger();
+
         builder.Services.AddDatabaseDeveloperPageExceptionFilter();
 
         builder.Services.AddScoped<IUser, CurrentUser>();

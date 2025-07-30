@@ -2,7 +2,7 @@
 
 namespace CollabBoard.Application.Boards.Queries.GetBoardSnapshot;
 
-public record GetBoardSnapshotQuery(Guid id) : IRequest<BoardSnapshotDto>;
+public record GetBoardSnapshotQuery(string id) : IRequest<BoardSnapshotDto>;
 
 public class GetBoardSnapshotQueryValidator : AbstractValidator<GetBoardSnapshotQuery>
 {

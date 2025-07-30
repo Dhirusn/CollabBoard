@@ -1,0 +1,38 @@
+.board-container {
+  display: flex;
+  height: 100vh;
+  width: 100vw;
+}
+
+.tools-pane, .chat-pane {
+  width: 250px;
+  background: #f0f0f0;
+  border-right: 1px solid #ccc;
+  padding: 10px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  transition: all 0.3s ease;
+}
+
+.tools-pane.collapsed {
+  width: 40px;
+  overflow: hidden;
+}
+
+.chat-pane {
+  border-left: 1px solid #ccc;
+}
+
+.chat-pane.collapsed {
+  width: 40px;
+  overflow: hidden;
+}
+
+.canvas-pane {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: white;
+}

@@ -13,13 +13,13 @@ public class ApplicationDbContext : IdentityDbContext<ApplicationUser>, IApplica
 
     public DbSet<TodoItem> TodoItems => Set<TodoItem>();
     public DbSet<Board> Boards => Set<Board>();
-    public DbSet<BoardMember> BoardsMember => Set<BoardMember>();
+    public DbSet<BoardMember> BoardsMembers => Set<BoardMember>();
+    public DbSet<BoardInvitation> BoardInvitations => Set<BoardInvitation>();
     public DbSet<ChatMessage> ChatMessages => Set<ChatMessage>();
     public DbSet<ContentBlock> ContentBlocks => Set<ContentBlock>();
     public DbSet<OperationLog> OperationLogs => Set<OperationLog>();
     public DbSet<Page> Pages => Set<Page>();
     public DbSet<Snapshot> Snapshots => Set<Snapshot>();
-
 
     protected override void OnModelCreating(ModelBuilder builder)
     {

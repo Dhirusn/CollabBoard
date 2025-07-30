@@ -1,7 +1,7 @@
 import { BrowserModule } from '@angular/platform-browser';
 import { APP_ID, NgModule } from '@angular/core';
 import { FormsModule } from '@angular/forms';
-import { RouterModule } from '@angular/router';
+import { RouterModule, Routes } from '@angular/router';
 import { HTTP_INTERCEPTORS, provideHttpClient, withInterceptorsFromDi } from '@angular/common/http';
 
 import { ModalModule } from 'ngx-bootstrap/modal';
@@ -15,6 +15,14 @@ import { TodoComponent } from './todo/todo.component';
 import { AuthorizeInterceptor } from 'src/api-authorization/authorize.interceptor';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 
+const routes: Routes = [
+            { path: '', component: HomeComponent, pathMatch: 'full' },
+            { path: 'counter', component: CounterComponent },
+            { path: 'fetch-data', component: FetchDataComponent },
+            { path: 'todo', component: TodoComponent },
+            { path: 'board-list', loadChildren: () => import('./features/board-list/board-list.module').then(m => m.BoardListModule) },
+            { path: 'board', loadChildren: () => import('./features/board/board.module').then(m => m.BoardModule) }
+        ]
 @NgModule({
     declarations: [
         AppComponent,
@@ -28,12 +36,7 @@ import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
     imports: [
         BrowserModule,
         FormsModule,
-        RouterModule.forRoot([
-            { path: '', component: HomeComponent, pathMatch: 'full' },
-            { path: 'counter', component: CounterComponent },
-            { path: 'fetch-data', component: FetchDataComponent },
-            { path: 'todo', component: TodoComponent }
-        ]),
+        RouterModule.forRoot(routes, { initialNavigation: 'enabledBlocking' }),
         BrowserAnimationsModule,
         ModalModule.forRoot()],
     providers: [

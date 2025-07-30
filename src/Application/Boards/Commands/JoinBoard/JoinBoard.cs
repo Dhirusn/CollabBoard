@@ -22,7 +22,7 @@ public class JoinBoardCommandHandler : IRequestHandler<JoinBoardCommand, Unit> /
 
     public async Task<Unit> Handle(JoinBoardCommand request, CancellationToken cancellationToken)
     {
-        var exists = await _context.BoardsMember
+        var exists = await _context.BoardsMembers
             .AnyAsync(bm => bm.BoardId == request.BoardId &&
                             bm.UserId == request.UserId.ToString(),
                       cancellationToken);
@@ -35,7 +35,7 @@ public class JoinBoardCommandHandler : IRequestHandler<JoinBoardCommand, Unit> /
                 UserId = request.UserId.ToString(),
                 Role = MemberRole.Viewer
             };
-            _context.BoardsMember.Add(entity);
+            _context.BoardsMembers.Add(entity);
             await _context.SaveChangesAsync(cancellationToken);
         }
 
