@@ -11,39 +11,31 @@ export class BoardComponent implements OnInit, OnDestroy {
   showTools = true;
   showChat = true;
   zoomLevel = 1;
-  currentTool: string = 'pen'; // Default tool
-  private toolSub!: Subscription;
+  usersOnline$ = this.toolSvc.getPresence();
+  tools = [
+    { id: 'pen', icon: '✏️', name: 'Pen' },
+    { id: 'rect', icon: '🔲', name: 'Rectangle' },
+    { id: 'circle', icon: '⭕', name: 'Circle' },
+    { id: 'text', icon: '🔤', name: 'Text' },
+    { id: 'eraser', icon: '🧽', name: 'Eraser' },
+    { id: 'select', icon: '🤏', name: 'Select / Move' }
+  ];
 
-  constructor(private toolService: ToolService) {}
-
-  ngOnInit(): void {
-    // Subscribe to tool changes
-    this.toolSub = this.toolService.getTool().subscribe(tool => {
-      this.currentTool = tool;
-    });
-  }
-
+  constructor(public toolSvc: ToolService) { }
   ngOnDestroy(): void {
-    this.toolSub?.unsubscribe();
+    //throw new Error('Method not implemented.');
+  }
+  ngOnInit(): void {
+    //throw new Error('Method not implemented.');
   }
 
-  toggleTools() {
-    this.showTools = !this.showTools;
+  selectTool(toolId: string) {
+    this.toolSvc.setTool(toolId);
   }
 
-  toggleChat() {
-    this.showChat = !this.showChat;
-  }
+  zoomIn() { this.zoomLevel = Math.min(this.zoomLevel + 0.1, 3); }
+  zoomOut() { this.zoomLevel = Math.max(this.zoomLevel - 0.1, 0.5); }
 
-  zoomIn() {
-    this.zoomLevel = Math.min(this.zoomLevel + 0.1, 3);
-  }
-
-  zoomOut() {
-    this.zoomLevel = Math.max(this.zoomLevel - 0.1, 0.5);
-  }
-
-  selectTool(tool: string) {
-    this.toolService.setTool(tool);
-  }
+  undo() { window.dispatchEvent(new Event('undo-canvas')); }
+  clear() { window.dispatchEvent(new Event('clear-canvas')); }
 }

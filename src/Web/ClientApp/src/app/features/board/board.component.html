@@ -1,35 +1,40 @@
 <div class="board-container">
   <!-- Left Tool Panel -->
-  <div class="tools-pane" [class.collapsed]="!showTools">
-    <button (click)="toggleTools()">
-      {{ showTools ? '◀ Hide' : '▶ Show' }}
+  <aside class="tools-pane" [class.collapsed]="!showTools">
+    <button (click)="showTools = !showTools">
+      {{ showTools ? '◀' : '▶' }}
     </button>
+    <div *ngIf="showTools" class="presence">
+      <h4>Online</h4>
+      <div *ngFor="let u of usersOnline$ | async" class="user">
+        <span [style.color]="u.color">●</span> {{ u.userName }} ({{ u.tool }})
+      </div>
+    </div>
     <div *ngIf="showTools" class="tool-list">
-      <button>✏️ Pencil</button>
-      <button>🔲 Rect</button>
-      <button>🔤 Text</button>
-      <button (click)="zoomIn()">➕ Zoom In</button>
-      <button (click)="zoomOut()">➖ Zoom Out</button>
-      <!-- In toolbar buttons -->
-      <button [class.active]="currentTool === 'pen'" (click)="selectTool('pen')">
-        ✏️ Pen
+      <button *ngFor="let t of tools" [class.active]="toolSvc.currentTool === t.id" (click)="selectTool(t.id)"
+        [title]="t.name">
+        {{ t.icon }} <span>{{ t.name }}</span>
       </button>
 
+      <hr>
+
+      <button (click)="zoomIn()">🔍+ Zoom In</button>
+      <button (click)="zoomOut()">🔍- Zoom Out</button>
+      <button (click)="undo()">↶ Undo</button>
+      <button (click)="clear()">🗑 Clear</button>
     </div>
-  </div>
+  </aside>
 
-  <!-- Center Canvas -->
-  <div class="canvas-pane">
-    <!-- <app-canvas [zoom]="zoomLevel"></app-canvas> -->
-  </div>
+  <!-- Konva Canvas -->
+  <main class="canvas-pane">
+    <app-canvas [zoom]="zoomLevel"></app-canvas>
+  </main>
 
-  <!-- Right Chat Panel -->
-  <div class="chat-pane" [class.collapsed]="!showChat">
-    <button (click)="toggleChat()">
+  <!-- Chat Panel -->
+  <aside class="chat-pane" [class.collapsed]="!showChat">
+    <button (click)="showChat = !showChat">
       {{ showChat ? 'Hide Chat ▶' : 'Show Chat ◀' }}
     </button>
-    <div *ngIf="showChat">
-      <app-chat></app-chat>
-    </div>
-  </div>
+    <app-chat *ngIf="showChat"></app-chat>
+  </aside>
 </div>

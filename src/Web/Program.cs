@@ -1,5 +1,7 @@
-using CollabBoard.Infrastructure.Data;
 using CollabBoard.Web.Hubs;
+using CollabBoard.Infrastructure.Data;
+using Microsoft.AspNetCore.Identity;
+using Microsoft.EntityFrameworkCore;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -15,7 +17,7 @@ var app = builder.Build();
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
 {
-    //await app.InitialiseDatabaseAsync();
+   // await app.InitialiseDatabaseAsync();
 }
 else
 {
@@ -25,6 +27,7 @@ else
 
 app.UseHttpsRedirection();
 app.UseStaticFiles();
+app.UseCors("CORS");
 
 app.UseSwaggerUi(settings =>
 {
@@ -42,7 +45,7 @@ app.MapHub<CollabHub>("/hubs/collab");
 app.MapGet("/api/logs", async (IConfiguration config) =>
 {
     var logs = new List<object>();
-    var connStr = config.GetConnectionString("DefaultConnection");
+    var connStr = builder.Configuration.GetConnectionString("CollabBoardDb")    ;
 
     await using var conn = new Npgsql.NpgsqlConnection(connStr);
     await conn.OpenAsync();

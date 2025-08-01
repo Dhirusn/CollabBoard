@@ -1,0 +1,39 @@
+.home-page {
+  h1,
+  h2,
+  h3,
+  h4 {
+    font-weight: 600;
+  }
+
+  section {
+    margin-bottom: 4rem;
+  }
+
+  .hero-image img,
+  .analytics-section img {
+    border-radius: 0.5rem;
+    max-width: 100%;
+  }
+
+  .accordion-button {
+    font-weight: 500;
+  }
+}
+
+.image-hero-section {
+  background-image: url("https://res.cloudinary.com/dmyqlvhlt/image/upload/v1753943603/getty-images-btzl2ppeobc-unsplash-2_dqknxy.webp");
+  height: 70vh; // adjust height as needed
+  width: 100%;
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+
+  display: flex;
+  justify-content: center;
+  align-items: center;
+
+  button {
+    z-index: 2;
+  }
+}

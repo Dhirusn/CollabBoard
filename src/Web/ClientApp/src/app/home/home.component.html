@@ -1,14 +1,140 @@
-<h1>Hello, world!</h1>
-<p>Welcome to your new single-page application, built with:</p>
-<ul>
-  <li><a href='https://get.asp.net/'>ASP.NET Core</a> and <a href='https://msdn.microsoft.com/en-us/library/67ef8sbd.aspx'>C#</a> for cross-platform server-side code</li>
-  <li><a href='https://angular.io/'>Angular</a> and <a href='http://www.typescriptlang.org/'>TypeScript</a> for client-side code</li>
-  <li><a href='http://getbootstrap.com/'>Bootstrap</a> for layout and styling</li>
-</ul>
-<p>To help you get started, we've also set up:</p>
-<ul>
-  <li><strong>Client-side navigation</strong>. For example, click <em>Counter</em> then <em>Back</em> to return here.</li>
-  <li><strong>Angular CLI integration</strong>. In development mode, there's no need to run <code>ng serve</code>. It runs in the background automatically, so your client-side resources are dynamically built on demand and the page refreshes when you modify any file.</li>
-  <li><strong>Efficient production builds</strong>. In production mode, development-time features are disabled, and your <code>dotnet publish</code> configuration automatically invokes <code>ng build</code> to produce minified, ahead-of-time compiled JavaScript files.</li>
-</ul>
-<p>The <code>ClientApp</code> subdirectory is a standard Angular CLI application. If you open a command prompt in that directory, you can run any <code>ng</code> command (e.g., <code>ng test</code>), or use <code>npm</code> to install extra packages into it.</p>
+<div class="home-page container text-center py-5">
+
+  <!-- Hero Section -->
+  <section class="hero mb-5">
+    <button class="btn btn-primary btn-sm mb-2">Watch Vercel's customer story</button>
+    <h1 class="display-6 fw-bold">Intelligent software to keep humans and AI agents knowledgeable and compliant</h1>
+    <p class="lead text-muted">Knowledge, training, analytics, and enterprise search for your people and AI workflows
+    </p>
+    <button class="btn btn-dark mt-2">Start for free</button>
+
+  </section>
+
+  <!-- Image Section -->
+  <section class="hero-image mb-5">
+    <div class="image-hero-section d-flex justify-content-center align-items-center">
+      <button class="btn btn btn-light btn-lg">
+        <i class="bi bi-play-fill"></i>
+        Watch Live Demo
+      </button>
+    </div>
+  </section>
+
+  <!-- Logos -->
+  <section class="trusted-by mb-5">
+    <p class="text-muted">Powering industry leaders</p>
+    <div class="d-flex justify-content-center gap-5 flex-wrap">
+      <img src="https://res.cloudinary.com/dmyqlvhlt/image/upload/v1753943850/Vercel_cetnea.svg" alt="Vercel"
+        height="60">
+      <img src="https://res.cloudinary.com/dmyqlvhlt/image/upload/v1753943849/Microsoft_Icon_xvlmko.jpg" alt="Microsoft"
+        height="60">
+      <img src="https://res.cloudinary.com/dmyqlvhlt/image/upload/v1753943849/Next_cibhfj.svg" alt="Next" height="60">
+      <img src="https://res.cloudinary.com/dmyqlvhlt/image/upload/v1753943850/Grammarly_New_2024_t57ccs.svg"
+        alt="Grammarly" height="60">
+    </div>
+  </section>
+
+  <!-- Scale Section -->
+  <section class="scale-section mb-5">
+    <h2 class="h4 fw-bold">Scale potential, not workload</h2>
+    <p class="text-muted mb-4">Basewell handles your L&D busywork—helping you create, sync, and share training content
+      in minutes—not weeks.</p>
+    <div class="row text-start">
+      <div class="col-md-3">
+        <h5 class="fw-semibold">Create</h5>
+        <p>Write content in Basewell’s native editor, with support for dynamic media and real-time collaboration.</p>
+      </div>
+      <div class="col-md-3">
+        <h5 class="fw-semibold">Sync</h5>
+        <p>Import knowledge from integrations and sites, with sync agents keeping content automatically updated.</p>
+      </div>
+      <div class="col-md-3">
+        <h5 class="fw-semibold">Share</h5>
+        <p>Publish content in just one click, with permission-based routing delivering the right training to the right
+          people.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- Analytics Section -->
+  <section class="analytics-section mb-5">
+    <h2 class="h4 fw-bold">Eliminate blind spots</h2>
+    <p class="text-muted">Get real-time visibility into employee comprehension with industry-leading analytics.</p>
+    <img
+      src="https://res.cloudinary.com/dmyqlvhlt/image/upload/v1753943603/shridhar-gupta-dzxqn4vev2m-unsplash_ygzju8.webp"
+      class="img-fluid shadow-sm rounded" alt="Analytics" />
+  </section>
+
+  <!-- Language Model Section -->
+  <section class="language-model mb-5">
+    <div class="container text-center py-5">
+      <h2 class="fw-bold mb-3">Work smarter, not harder</h2>
+      <p class="text-muted mb-4">
+        Basewell’s language models deliver answers based on user<br />
+        context and verified company knowledge.
+      </p>
+
+      <div class="row justify-content-center g-4">
+        <div class="col-md-4" *ngFor="let card of cards">
+          <div class="p-4 border rounded shadow-sm h-100 text-start bg-white">
+            <div *ngIf="card.image" class="mb-3">
+              <img [src]="card.image" class="img-fluid rounded" alt="Card preview" />
+            </div>
+            <h6 class="fw-bold">{{ card.title }}</h6>
+            <p class="text-muted mb-0 small">{{ card.description }}</p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </section>
+
+  <!-- Features Section -->
+  <section class="features-section mb-5">
+    <div class="container text-center py-5">
+      <h2 class="fw-bold mb-2">Core functionality, reimagined</h2>
+      <p class="text-muted mb-4">
+        Everything else you’ve come to expect from learning tools,<br />
+        rebuilt to be modern, simple, powerful, and fast.
+      </p>
+
+      <div class="row justify-content-center text-start">
+        <div class="col-md-4 col-lg-3 mb-4" *ngFor="let item of features">
+          <div class="d-flex">
+            <i [class]="'bi ' + item.icon + ' me-2 fs-5 text-primary'"></i>
+            <div>
+              <h6 class="fw-bold mb-1">{{ item.title }}</h6>
+              <p class="mb-0 text-muted small">{{ item.description }}</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- FAQ Section -->
+  <section class="faq-section mb-5">
+    <h2 class="h4 fw-bold">Frequently Asked Questions</h2>
+    <div class="accordion" id="faqAccordion">
+      <div class="accordion-item" *ngFor="let faq of faqs; let i = index">
+        <h2 class="accordion-header" id="heading{{i}}">
+          <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse"
+            [attr.data-bs-target]="'#collapse' + i" aria-expanded="false" [attr.aria-controls]="'collapse' + i">
+            {{ faq.question }}
+          </button>
+        </h2>
+        <div [id]="'collapse' + i" class="accordion-collapse collapse" [attr.aria-labelledby]="'heading' + i"
+          data-bs-parent="#faqAccordion">
+          <div class="accordion-body">{{ faq.answer }}</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- CTA Section -->
+  <section class="cta-section py-5 bg-light rounded shadow-sm text-center">
+    <h3 class="fw-bold mb-2">Build better teams, faster with Basewell</h3>
+    <button class="btn btn-dark">Start for Free</button>
+  </section>
+
+</div>

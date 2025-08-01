@@ -44,8 +44,12 @@ public static class DependencyInjection
             configure.Title = "CollabBoard API";
 
         });
-        
+
         builder.Services.AddSignalR();
+
+        builder.Services.AddCors(o => o.AddPolicy("CORS", policy => policy
+        .WithOrigins(["https://localhost:4200", "http://localhost:4200"])
+        .AllowAnyMethod().AllowAnyHeader().AllowCredentials()));
     }
 
     public static void AddKeyVaultIfConfigured(this IHostApplicationBuilder builder)
