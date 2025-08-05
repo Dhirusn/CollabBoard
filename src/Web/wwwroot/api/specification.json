@@ -249,6 +249,189 @@
         }
       }
     },
+    "/api/Boards/{id}/members": {
+      "get": {
+        "tags": [
+          "Boards"
+        ],
+        "operationId": "GetBoardMembers",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "guid"
+            },
+            "x-position": 1
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/BoardMemberDto"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/Boards/searchmembers": {
+      "get": {
+        "tags": [
+          "Boards"
+        ],
+        "operationId": "SearchUsers",
+        "parameters": [
+          {
+            "name": "query",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "x-position": 1
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/UserDto"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/Boards/myInvitations": {
+      "get": {
+        "tags": [
+          "Boards"
+        ],
+        "operationId": "GetMyInvitations",
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/InvitationDto"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/Boards/requestinvite": {
+      "post": {
+        "tags": [
+          "Boards"
+        ],
+        "operationId": "RequestBoardMember",
+        "requestBody": {
+          "x-name": "command",
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/InviteMemberCommand"
+              }
+            }
+          },
+          "required": true,
+          "x-position": 1
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "string",
+                  "format": "guid"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/Boards/{id}/accept": {
+      "post": {
+        "tags": [
+          "Boards"
+        ],
+        "operationId": "AcceptInvitation",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "guid"
+            },
+            "x-position": 1
+          }
+        ],
+        "responses": {
+          "201": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "string",
+                  "format": "guid"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/Boards/members/reject": {
+      "post": {
+        "tags": [
+          "Boards"
+        ],
+        "operationId": "RejectInvitation",
+        "requestBody": {
+          "x-name": "command",
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RejectInvitationCommand"
+              }
+            }
+          },
+          "required": true,
+          "x-position": 1
+        },
+        "responses": {
+          "204": {
+            "description": ""
+          }
+        }
+      }
+    },
     "/api/Boards/{id}/chat": {
       "get": {
         "tags": [
@@ -682,6 +865,15 @@
           }
         }
       },
+      "CreateBoardCommand": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "title": {
+            "type": "string"
+          }
+        }
+      },
       "BoardSnapshotDto": {
         "type": "object",
         "additionalProperties": false
@@ -708,15 +900,6 @@
           }
         }
       },
-      "CreateBoardCommand": {
-        "type": "object",
-        "additionalProperties": false,
-        "properties": {
-          "title": {
-            "type": "string"
-          }
-        }
-      },
       "UpdateBoardTitleCommand": {
         "type": "object",
         "additionalProperties": false,
@@ -735,6 +918,91 @@
         "additionalProperties": false,
         "properties": {
           "boardId": {
+            "type": "string",
+            "format": "guid"
+          }
+        }
+      },
+      "BoardMemberDto": {
+        "type": "object",
+        "additionalProperties": false
+      },
+      "UserDto": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "guid"
+          },
+          "email": {
+            "type": "string"
+          },
+          "displayName": {
+            "type": "string"
+          }
+        }
+      },
+      "InvitationDto": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "invitationId": {
+            "type": "string",
+            "format": "guid"
+          },
+          "boardTitle": {
+            "type": "string"
+          },
+          "boardId": {
+            "type": "string",
+            "format": "guid"
+          },
+          "requestedRole": {
+            "$ref": "#/components/schemas/MemberRole"
+          },
+          "createdUtc": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true
+          }
+        }
+      },
+      "MemberRole": {
+        "type": "integer",
+        "description": "",
+        "x-enumNames": [
+          "Viewer",
+          "Editor",
+          "Owner"
+        ],
+        "enum": [
+          0,
+          1,
+          2
+        ]
+      },
+      "InviteMemberCommand": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "boardId": {
+            "type": "string",
+            "format": "guid"
+          },
+          "targetUserEmail": {
+            "type": "string"
+          },
+          "role": {
+            "$ref": "#/components/schemas/MemberRole"
+          }
+        }
+      },
+      "RejectInvitationCommand": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "invitationId": {
             "type": "string",
             "format": "guid"
           }

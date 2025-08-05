@@ -1,31 +1,34 @@
 import {
-  AfterViewInit, Component, ElementRef, Input, ViewChild
+  AfterViewInit, Component, ElementRef, Input, ViewChild, OnDestroy
 } from '@angular/core';
 import Konva from 'konva';
 import { v4 as uuid } from 'uuid';
 import { ToolService } from 'src/app/core/services/tool.service';
-import { SignalRProvider } from 'src/app/core/services/y-signalr';
-import { HubConnectionBuilder } from '@microsoft/signalr';
 import * as Y from 'yjs';
-import { SignalRHubService } from 'src/app/core/services/signalr-hub.service';
-
+import { Awareness } from 'y-protocols/awareness';
 type LogEntry = { action: string; shape: any; attrs?: any };
 
 @Component({
   selector: 'app-canvas',
   standalone: true,
-  imports: [],
   templateUrl: './canvas.component.html',
   styleUrls: ['./canvas.component.scss']
 })
-export class CanvasComponent implements AfterViewInit {
+export class CanvasComponent implements AfterViewInit, OnDestroy {
   @ViewChild('stageContainer', { static: true })
   container!: ElementRef<HTMLDivElement>;
 
   private stage!: Konva.Stage;
-  private layer = new Konva.Layer();
-  private history: string[] = [];          // JSON snapshots for undo
+  private layer!: Konva.Layer;
   private transformer = new Konva.Transformer();
+
+  private history: string[] = [];          // JSON snapshots for undo
+  private drawingShape: Konva.Shape | null = null;
+  private startPos: Konva.Vector2d | null = null;
+
+  private ydoc!: Y.Doc;
+  private awareness!: Awareness;
+  private konvaMap!: Y.Map<any>;
 
   @Input() set zoom(z: number) {
     if (this.stage) {
@@ -37,35 +40,27 @@ export class CanvasComponent implements AfterViewInit {
   constructor(public toolSvc: ToolService) { }
 
   ngAfterViewInit(): void {
-    this.initCollaboration();
-    this.stage = new Konva.Stage({
-      container: this.container.nativeElement,
-      width: this.container.nativeElement.offsetWidth,
-      height: this.container.nativeElement.offsetHeight
-    });
+    // Get shared Yjs doc and awareness from ToolService
+    this.ydoc = this.toolSvc.getYDoc();
+    this.awareness = this.toolSvc.getAwareness();
 
-    this.stage.add(this.layer);
-    this.layer.add(this.transformer);
+    // Get or create Konva root map inside Yjs doc
+    this.konvaMap = this.ydoc.getMap('konva');
 
-    this.bindEvents();
-    this.saveState(); // initial empty state
+    this.initCanvas();
+
+    this.subscribeToToolChanges();
+
+    this.subscribeToPresenceChanges();
   }
 
-  private async initCollaboration(): Promise<void> {
-    /* 1️⃣  shared Yjs document */
-    const doc = new Y.Doc();
-    const connection = new HubConnectionBuilder()
-      .withUrl('https://localhost:5001/hubs/collab')
-      .withAutomaticReconnect()
-      .build();
-    await connection.start();
+  ngOnDestroy(): void {
+    // Clean up listeners if needed
+    window.removeEventListener('undo-canvas', this.undo);
+    window.removeEventListener('clear-canvas', this.clear);
+  }
 
-    new SignalRProvider(connection, doc); // starts syncing
-
-    /* 2️⃣  CRDT root */
-    const konvaMap = doc.getMap('konva');
-
-    /* 3️⃣  create stage & layer */
+  private initCanvas(): void {
     this.stage = new Konva.Stage({
       container: this.container.nativeElement,
       width: this.container.nativeElement.offsetWidth,
@@ -74,44 +69,60 @@ export class CanvasComponent implements AfterViewInit {
 
     this.layer = new Konva.Layer();
     this.stage.add(this.layer);
+    this.layer.add(this.transformer);
 
-    /* 4️⃣  two-way binding (write once) */
-    this.bindKonvaToYjs(this.stage, konvaMap, this.layer);
-    this.bindDrawingEvents();           // your existing pen/rect/
+    // Bind Konva layer ↔ Yjs map for collaborative sync
+    this.bindKonvaToYjs();
+
+    // Bind drawing & interaction events
+    this.bindEvents();
+
+    this.saveState();
+
+    // Undo and Clear global event listeners
+    window.addEventListener('undo-canvas', () => this.undo());
+    window.addEventListener('clear-canvas', () => this.clear());
   }
-  /* -------------------------------------------------- */
-  /* Konva ↔ Yjs glue – 1-time helper                   */
-  private bindKonvaToYjs(stage: Konva.Stage, map: Y.Map<any>, layer: Konva.Layer) {
-    // (1) apply remote updates
-    map.observeDeep(() => {
-      layer.destroyChildren();
-      const tree = map.get('root') || [];
-      tree.forEach(nodeObj => layer.add(Konva.Node.create(nodeObj)));
-      layer.draw();
+
+  private bindKonvaToYjs() {
+    // Apply remote updates to Konva layer
+    this.konvaMap.observeDeep(() => {
+      this.layer.destroyChildren();
+
+      const tree = this.konvaMap.get('root') || [];
+      tree.forEach(nodeObj => this.layer.add(Konva.Node.create(nodeObj)));
+
+      this.layer.draw();
     });
 
-    // (2) push local changes
+    // Push local changes to Yjs map
     const push = () => {
-      const json = stage.toJSON();
-      map.set('root', JSON.parse(json).children[0].children);
+      const json = this.stage.toJSON();
+      this.konvaMap.set('root', JSON.parse(json).children[0].children);
     };
-    layer.on('add remove dragend transformend', push);
+
+    this.layer.on('add remove dragend transformend', push);
   }
 
-  /* -------------------------------------------------- */
-  /* keep your existing drawing logic – it only adds
-     shapes to the layer; the observer above broadcasts. */
-  private bindDrawingEvents() {
-    // … your onMouseDown / onMouseMove / onMouseUp …
+  private subscribeToToolChanges(): void {
+    this.toolSvc.getTool().subscribe(tool => {
+      console.log('Tool changed:', tool);
+      // You can update cursor styles or UI here based on the current tool
+    });
   }
 
-  /* ========== EVENT BINDINGS ========== */
+  private subscribeToPresenceChanges(): void {
+    this.toolSvc.getPresence().subscribe(users => {
+      // Optionally show other users' cursors or presence indicators on canvas
+      // console.log('Presence users:', users);
+    });
+  }
+
   private bindEvents(): void {
     this.stage.on('mousedown', e => this.onStageMouseDown(e));
     this.stage.on('mousemove', e => this.onStageMouseMove(e));
     this.stage.on('mouseup', () => this.onStageMouseUp());
 
-    // Mouse wheel zoom & pan
     this.stage.on('wheel', e => {
       e.evt.preventDefault();
       const scaleBy = 1.1;
@@ -132,23 +143,16 @@ export class CanvasComponent implements AfterViewInit {
       this.stage.position(newPos);
       this.stage.batchDraw();
     });
-
-    // Global undo / clear listeners
-    window.addEventListener('undo-canvas', () => this.undo());
-    window.addEventListener('clear-canvas', () => this.clear());
   }
-
-  /* ========== DRAWING STATE ========== */
-  private drawingShape: Konva.Shape | null = null;
-  private startPos: Konva.Vector2d | null = null;
 
   private onStageMouseDown(e: Konva.KonvaEventObject<MouseEvent>): void {
     if (e.target !== this.stage) return;
 
     const pos = this.stage.getPointerPosition()!;
     this.startPos = { x: pos.x, y: pos.y };
-    console.log(this.toolSvc.currentTool);
-    switch (this.toolSvc.currentTool) {
+    const tool = this.toolSvc.currentTool;
+
+    switch (tool) {
       case 'pen':
         this.drawingShape = new Konva.Line({
           id: uuid(),
@@ -159,25 +163,30 @@ export class CanvasComponent implements AfterViewInit {
           lineJoin: 'round'
         });
         break;
+
       case 'rect':
         this.drawingShape = new Konva.Rect({
           id: uuid(), x: pos.x, y: pos.y, width: 0, height: 0, fill: '#7ed6df'
         });
         break;
+
       case 'circle':
         this.drawingShape = new Konva.Circle({
           id: uuid(), x: pos.x, y: pos.y, radius: 0, fill: '#ff7979'
         });
         break;
+
       case 'text':
         const text = prompt('Enter text:', 'Hello Konva') || 'Text';
         const txt = new Konva.Text({
           id: uuid(), x: pos.x, y: pos.y, text, fontSize: 20, fill: '#130f40'
         });
         this.addShape(txt);
-        return;  // single click, no drag
+        return; // no drag, single click
+
       case 'eraser':
-        return; // handled in move
+        return; // handled in mouse move
+
       case 'select':
         this.transformer.nodes([]);
         return;
@@ -189,13 +198,15 @@ export class CanvasComponent implements AfterViewInit {
   }
 
   private onStageMouseMove(e: Konva.KonvaEventObject<MouseEvent>): void {
-    if (!this.startPos) return;
+    const pos = this.stage.getPointerPosition();
+    if (!pos) return;
 
-    const pos = this.stage.getPointerPosition()!;
+    // Notify cursor movement to other users
+    this.toolSvc.moveCursor(pos.x, pos.y);
 
     if (this.toolSvc.currentTool === 'eraser') {
       const hit = this.layer.getIntersection(pos);
-      if (hit && hit.id() !== this.transformer.id()) { // && hit !== this.stage
+      if (hit && hit.id() !== this.transformer.id()) {
         this.log({ action: 'delete', shape: hit.toObject() });
         hit.destroy();
         this.layer.batchDraw();
@@ -203,7 +214,7 @@ export class CanvasComponent implements AfterViewInit {
       return;
     }
 
-    if (!this.drawingShape) return;
+    if (!this.drawingShape || !this.startPos) return;
 
     switch (this.toolSvc.currentTool) {
       case 'pen':
@@ -211,6 +222,7 @@ export class CanvasComponent implements AfterViewInit {
           (this.drawingShape as Konva.Line).points().concat([pos.x, pos.y])
         );
         break;
+
       case 'rect':
         const r = this.drawingShape as Konva.Rect;
         r.width(Math.abs(pos.x - this.startPos.x));
@@ -218,12 +230,14 @@ export class CanvasComponent implements AfterViewInit {
         r.x(Math.min(pos.x, this.startPos.x));
         r.y(Math.min(pos.y, this.startPos.y));
         break;
+
       case 'circle':
         const c = this.drawingShape as Konva.Circle;
         c.radius(Math.sqrt(Math.pow(pos.x - this.startPos.x, 2) +
           Math.pow(pos.y - this.startPos.y, 2)));
         break;
     }
+
     this.stage.batchDraw();
   }
 
@@ -236,7 +250,6 @@ export class CanvasComponent implements AfterViewInit {
     this.startPos = null;
   }
 
-  /* ========== HELPERS ========== */
   private addShape(shape: Konva.Shape): void {
     this.log({ action: 'add', shape: shape.toObject() });
     this.saveState();
@@ -248,7 +261,6 @@ export class CanvasComponent implements AfterViewInit {
   }
 
   private log(entry: LogEntry): void {
-    /* eslint-disable no-console */
     console.table([entry]);
   }
 
@@ -256,22 +268,22 @@ export class CanvasComponent implements AfterViewInit {
     this.history.push(this.layer.toJSON());
   }
 
-  private undo(): void {
+  private undo = (): void => {
     if (this.history.length < 2) return;
-    this.history.pop(); // remove current
+    this.history.pop(); // remove current state
     const json = this.history[this.history.length - 1];
     this.layer.destroyChildren();
     this.layer = Konva.Node.create(json).getLayer()!;
     this.stage.add(this.layer);
     this.layer.add(this.transformer);
     this.stage.batchDraw();
-  }
+  };
 
-  private clear(): void {
+  private clear = (): void => {
     this.layer.destroyChildren();
     this.layer.add(this.transformer);
     this.saveState();
     this.stage.batchDraw();
     this.log({ action: 'clear', shape: null });
-  }
+  };
 }

@@ -1,0 +1,13 @@
+.user-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  border: 1px solid #ccc;
+  max-height: 120px;
+  overflow-y: auto;
+  li {
+    padding: 4px 8px;
+    cursor: pointer;
+    &:hover { background: #f0f0f0; }
+  }
+}

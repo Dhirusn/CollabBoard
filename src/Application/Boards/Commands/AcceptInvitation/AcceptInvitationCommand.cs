@@ -5,9 +5,9 @@ using Microsoft.Extensions.Logging;
 
 namespace CollabBoard.Application.Boards.Commands.AcceptInvitation;
 
-public record AcceptInvitationCommand(Guid InvitationId) : IRequest;
+public record AcceptInvitationCommand(Guid InvitationId) : IRequest<Guid>;
 
-public class AcceptInvitationCommandHandler : IRequestHandler<AcceptInvitationCommand>
+public class AcceptInvitationCommandHandler : IRequestHandler<AcceptInvitationCommand, Guid>
 {
     private readonly IApplicationDbContext _ctx;
     private readonly IUser _current;
@@ -18,7 +18,7 @@ public class AcceptInvitationCommandHandler : IRequestHandler<AcceptInvitationCo
         _current = current;
         _logger = logger;
     }
-    public async Task Handle(AcceptInvitationCommand req, CancellationToken ct)
+    public async Task<Guid> Handle(AcceptInvitationCommand req, CancellationToken ct)
     {
         try
         {
@@ -43,6 +43,7 @@ public class AcceptInvitationCommandHandler : IRequestHandler<AcceptInvitationCo
 
             _ctx.BoardsMembers.Add(member);
             await _ctx.SaveChangesAsync(ct);
+            return member.Id;
         }
         catch (Exception ex)
         {

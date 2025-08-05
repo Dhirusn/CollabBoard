@@ -1,6 +1,7 @@
   import { Injectable } from '@angular/core';
   import * as Y from 'yjs';
   import { Awareness } from 'y-protocols/awareness';
+import { SignalRHubService } from './signalr-hub.service';
 
   @Injectable({ providedIn: 'root' })
   export class YjsService {

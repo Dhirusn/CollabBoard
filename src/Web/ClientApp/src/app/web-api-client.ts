@@ -85,6 +85,12 @@ export interface IBoardsClient {
     deleteBoard(id: string): Observable<void>;
     updateBoardTitle(id: string, command: UpdateBoardTitleCommand): Observable<void>;
     addPage(id: string, command: AddPageCommand): Observable<string>;
+    getBoardMembers(id: string): Observable<BoardMemberDto[]>;
+    searchUsers(query: string): Observable<UserDto[]>;
+    getMyInvitations(): Observable<InvitationDto[]>;
+    requestBoardMember(command: InviteMemberCommand): Observable<string>;
+    acceptInvitation(id: string): Observable<string>;
+    rejectInvitation(command: RejectInvitationCommand): Observable<void>;
     getChatMessages(id: string, boardId: string): Observable<PaginatedListOfChatMessageDto>;
     sendChatMessage(id: string, command: SendChatMessageCommand): Observable<string>;
 }
@@ -461,6 +467,331 @@ export class BoardsClient implements IBoardsClient {
                 result201 = resultData201 !== undefined ? resultData201 : <any>null;
     
             return _observableOf(result201);
+            }));
+        } else if (status !== 200 && status !== 204) {
+            return blobToText(responseBlob).pipe(_observableMergeMap((_responseText: string) => {
+            return throwException("An unexpected server error occurred.", status, _responseText, _headers);
+            }));
+        }
+        return _observableOf(null as any);
+    }
+
+    getBoardMembers(id: string): Observable<BoardMemberDto[]> {
+        let url_ = this.baseUrl + "/api/Boards/{id}/members";
+        if (id === undefined || id === null)
+            throw new Error("The parameter 'id' must be defined.");
+        url_ = url_.replace("{id}", encodeURIComponent("" + id));
+        url_ = url_.replace(/[?&]$/, "");
+
+        let options_ : any = {
+            observe: "response",
+            responseType: "blob",
+            headers: new HttpHeaders({
+                "Accept": "application/json"
+            })
+        };
+
+        return this.http.request("get", url_, options_).pipe(_observableMergeMap((response_ : any) => {
+            return this.processGetBoardMembers(response_);
+        })).pipe(_observableCatch((response_: any) => {
+            if (response_ instanceof HttpResponseBase) {
+                try {
+                    return this.processGetBoardMembers(response_ as any);
+                } catch (e) {
+                    return _observableThrow(e) as any as Observable<BoardMemberDto[]>;
+                }
+            } else
+                return _observableThrow(response_) as any as Observable<BoardMemberDto[]>;
+        }));
+    }
+
+    protected processGetBoardMembers(response: HttpResponseBase): Observable<BoardMemberDto[]> {
+        const status = response.status;
+        const responseBlob =
+            response instanceof HttpResponse ? response.body :
+            (response as any).error instanceof Blob ? (response as any).error : undefined;
+
+        let _headers: any = {}; if (response.headers) { for (let key of response.headers.keys()) { _headers[key] = response.headers.get(key); }}
+        if (status === 200) {
+            return blobToText(responseBlob).pipe(_observableMergeMap((_responseText: string) => {
+            let result200: any = null;
+            let resultData200 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver);
+            if (Array.isArray(resultData200)) {
+                result200 = [] as any;
+                for (let item of resultData200)
+                    result200!.push(BoardMemberDto.fromJS(item));
+            }
+            else {
+                result200 = <any>null;
+            }
+            return _observableOf(result200);
+            }));
+        } else if (status !== 200 && status !== 204) {
+            return blobToText(responseBlob).pipe(_observableMergeMap((_responseText: string) => {
+            return throwException("An unexpected server error occurred.", status, _responseText, _headers);
+            }));
+        }
+        return _observableOf(null as any);
+    }
+
+    searchUsers(query: string): Observable<UserDto[]> {
+        let url_ = this.baseUrl + "/api/Boards/searchmembers?";
+        if (query === undefined || query === null)
+            throw new Error("The parameter 'query' must be defined and cannot be null.");
+        else
+            url_ += "query=" + encodeURIComponent("" + query) + "&";
+        url_ = url_.replace(/[?&]$/, "");
+
+        let options_ : any = {
+            observe: "response",
+            responseType: "blob",
+            headers: new HttpHeaders({
+                "Accept": "application/json"
+            })
+        };
+
+        return this.http.request("get", url_, options_).pipe(_observableMergeMap((response_ : any) => {
+            return this.processSearchUsers(response_);
+        })).pipe(_observableCatch((response_: any) => {
+            if (response_ instanceof HttpResponseBase) {
+                try {
+                    return this.processSearchUsers(response_ as any);
+                } catch (e) {
+                    return _observableThrow(e) as any as Observable<UserDto[]>;
+                }
+            } else
+                return _observableThrow(response_) as any as Observable<UserDto[]>;
+        }));
+    }
+
+    protected processSearchUsers(response: HttpResponseBase): Observable<UserDto[]> {
+        const status = response.status;
+        const responseBlob =
+            response instanceof HttpResponse ? response.body :
+            (response as any).error instanceof Blob ? (response as any).error : undefined;
+
+        let _headers: any = {}; if (response.headers) { for (let key of response.headers.keys()) { _headers[key] = response.headers.get(key); }}
+        if (status === 200) {
+            return blobToText(responseBlob).pipe(_observableMergeMap((_responseText: string) => {
+            let result200: any = null;
+            let resultData200 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver);
+            if (Array.isArray(resultData200)) {
+                result200 = [] as any;
+                for (let item of resultData200)
+                    result200!.push(UserDto.fromJS(item));
+            }
+            else {
+                result200 = <any>null;
+            }
+            return _observableOf(result200);
+            }));
+        } else if (status !== 200 && status !== 204) {
+            return blobToText(responseBlob).pipe(_observableMergeMap((_responseText: string) => {
+            return throwException("An unexpected server error occurred.", status, _responseText, _headers);
+            }));
+        }
+        return _observableOf(null as any);
+    }
+
+    getMyInvitations(): Observable<InvitationDto[]> {
+        let url_ = this.baseUrl + "/api/Boards/myInvitations";
+        url_ = url_.replace(/[?&]$/, "");
+
+        let options_ : any = {
+            observe: "response",
+            responseType: "blob",
+            headers: new HttpHeaders({
+                "Accept": "application/json"
+            })
+        };
+
+        return this.http.request("get", url_, options_).pipe(_observableMergeMap((response_ : any) => {
+            return this.processGetMyInvitations(response_);
+        })).pipe(_observableCatch((response_: any) => {
+            if (response_ instanceof HttpResponseBase) {
+                try {
+                    return this.processGetMyInvitations(response_ as any);
+                } catch (e) {
+                    return _observableThrow(e) as any as Observable<InvitationDto[]>;
+                }
+            } else
+                return _observableThrow(response_) as any as Observable<InvitationDto[]>;
+        }));
+    }
+
+    protected processGetMyInvitations(response: HttpResponseBase): Observable<InvitationDto[]> {
+        const status = response.status;
+        const responseBlob =
+            response instanceof HttpResponse ? response.body :
+            (response as any).error instanceof Blob ? (response as any).error : undefined;
+
+        let _headers: any = {}; if (response.headers) { for (let key of response.headers.keys()) { _headers[key] = response.headers.get(key); }}
+        if (status === 200) {
+            return blobToText(responseBlob).pipe(_observableMergeMap((_responseText: string) => {
+            let result200: any = null;
+            let resultData200 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver);
+            if (Array.isArray(resultData200)) {
+                result200 = [] as any;
+                for (let item of resultData200)
+                    result200!.push(InvitationDto.fromJS(item));
+            }
+            else {
+                result200 = <any>null;
+            }
+            return _observableOf(result200);
+            }));
+        } else if (status !== 200 && status !== 204) {
+            return blobToText(responseBlob).pipe(_observableMergeMap((_responseText: string) => {
+            return throwException("An unexpected server error occurred.", status, _responseText, _headers);
+            }));
+        }
+        return _observableOf(null as any);
+    }
+
+    requestBoardMember(command: InviteMemberCommand): Observable<string> {
+        let url_ = this.baseUrl + "/api/Boards/requestinvite";
+        url_ = url_.replace(/[?&]$/, "");
+
+        const content_ = JSON.stringify(command);
+
+        let options_ : any = {
+            body: content_,
+            observe: "response",
+            responseType: "blob",
+            headers: new HttpHeaders({
+                "Content-Type": "application/json",
+                "Accept": "application/json"
+            })
+        };
+
+        return this.http.request("post", url_, options_).pipe(_observableMergeMap((response_ : any) => {
+            return this.processRequestBoardMember(response_);
+        })).pipe(_observableCatch((response_: any) => {
+            if (response_ instanceof HttpResponseBase) {
+                try {
+                    return this.processRequestBoardMember(response_ as any);
+                } catch (e) {
+                    return _observableThrow(e) as any as Observable<string>;
+                }
+            } else
+                return _observableThrow(response_) as any as Observable<string>;
+        }));
+    }
+
+    protected processRequestBoardMember(response: HttpResponseBase): Observable<string> {
+        const status = response.status;
+        const responseBlob =
+            response instanceof HttpResponse ? response.body :
+            (response as any).error instanceof Blob ? (response as any).error : undefined;
+
+        let _headers: any = {}; if (response.headers) { for (let key of response.headers.keys()) { _headers[key] = response.headers.get(key); }}
+        if (status === 200) {
+            return blobToText(responseBlob).pipe(_observableMergeMap((_responseText: string) => {
+            let result200: any = null;
+            let resultData200 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver);
+                result200 = resultData200 !== undefined ? resultData200 : <any>null;
+    
+            return _observableOf(result200);
+            }));
+        } else if (status !== 200 && status !== 204) {
+            return blobToText(responseBlob).pipe(_observableMergeMap((_responseText: string) => {
+            return throwException("An unexpected server error occurred.", status, _responseText, _headers);
+            }));
+        }
+        return _observableOf(null as any);
+    }
+
+    acceptInvitation(id: string): Observable<string> {
+        let url_ = this.baseUrl + "/api/Boards/{id}/accept";
+        if (id === undefined || id === null)
+            throw new Error("The parameter 'id' must be defined.");
+        url_ = url_.replace("{id}", encodeURIComponent("" + id));
+        url_ = url_.replace(/[?&]$/, "");
+
+        let options_ : any = {
+            observe: "response",
+            responseType: "blob",
+            headers: new HttpHeaders({
+                "Accept": "application/json"
+            })
+        };
+
+        return this.http.request("post", url_, options_).pipe(_observableMergeMap((response_ : any) => {
+            return this.processAcceptInvitation(response_);
+        })).pipe(_observableCatch((response_: any) => {
+            if (response_ instanceof HttpResponseBase) {
+                try {
+                    return this.processAcceptInvitation(response_ as any);
+                } catch (e) {
+                    return _observableThrow(e) as any as Observable<string>;
+                }
+            } else
+                return _observableThrow(response_) as any as Observable<string>;
+        }));
+    }
+
+    protected processAcceptInvitation(response: HttpResponseBase): Observable<string> {
+        const status = response.status;
+        const responseBlob =
+            response instanceof HttpResponse ? response.body :
+            (response as any).error instanceof Blob ? (response as any).error : undefined;
+
+        let _headers: any = {}; if (response.headers) { for (let key of response.headers.keys()) { _headers[key] = response.headers.get(key); }}
+        if (status === 201) {
+            return blobToText(responseBlob).pipe(_observableMergeMap((_responseText: string) => {
+            let result201: any = null;
+            let resultData201 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver);
+                result201 = resultData201 !== undefined ? resultData201 : <any>null;
+    
+            return _observableOf(result201);
+            }));
+        } else if (status !== 200 && status !== 204) {
+            return blobToText(responseBlob).pipe(_observableMergeMap((_responseText: string) => {
+            return throwException("An unexpected server error occurred.", status, _responseText, _headers);
+            }));
+        }
+        return _observableOf(null as any);
+    }
+
+    rejectInvitation(command: RejectInvitationCommand): Observable<void> {
+        let url_ = this.baseUrl + "/api/Boards/members/reject";
+        url_ = url_.replace(/[?&]$/, "");
+
+        const content_ = JSON.stringify(command);
+
+        let options_ : any = {
+            body: content_,
+            observe: "response",
+            responseType: "blob",
+            headers: new HttpHeaders({
+                "Content-Type": "application/json",
+            })
+        };
+
+        return this.http.request("post", url_, options_).pipe(_observableMergeMap((response_ : any) => {
+            return this.processRejectInvitation(response_);
+        })).pipe(_observableCatch((response_: any) => {
+            if (response_ instanceof HttpResponseBase) {
+                try {
+                    return this.processRejectInvitation(response_ as any);
+                } catch (e) {
+                    return _observableThrow(e) as any as Observable<void>;
+                }
+            } else
+                return _observableThrow(response_) as any as Observable<void>;
+        }));
+    }
+
+    protected processRejectInvitation(response: HttpResponseBase): Observable<void> {
+        const status = response.status;
+        const responseBlob =
+            response instanceof HttpResponse ? response.body :
+            (response as any).error instanceof Blob ? (response as any).error : undefined;
+
+        let _headers: any = {}; if (response.headers) { for (let key of response.headers.keys()) { _headers[key] = response.headers.get(key); }}
+        if (status === 204) {
+            return blobToText(responseBlob).pipe(_observableMergeMap((_responseText: string) => {
+            return _observableOf(null as any);
             }));
         } else if (status !== 200 && status !== 204) {
             return blobToText(responseBlob).pipe(_observableMergeMap((_responseText: string) => {
@@ -1219,6 +1550,42 @@ export interface IBoardSummaryDto {
     updatedAt?: Date;
 }
 
+export class CreateBoardCommand implements ICreateBoardCommand {
+    title?: string;
+
+    constructor(data?: ICreateBoardCommand) {
+        if (data) {
+            for (var property in data) {
+                if (data.hasOwnProperty(property))
+                    (<any>this)[property] = (<any>data)[property];
+            }
+        }
+    }
+
+    init(_data?: any) {
+        if (_data) {
+            this.title = _data["title"];
+        }
+    }
+
+    static fromJS(data: any): CreateBoardCommand {
+        data = typeof data === 'object' ? data : {};
+        let result = new CreateBoardCommand();
+        result.init(data);
+        return result;
+    }
+
+    toJSON(data?: any) {
+        data = typeof data === 'object' ? data : {};
+        data["title"] = this.title;
+        return data;
+    }
+}
+
+export interface ICreateBoardCommand {
+    title?: string;
+}
+
 export class BoardSnapshotDto implements IBoardSnapshotDto {
 
     constructor(data?: IBoardSnapshotDto) {
@@ -1297,42 +1664,6 @@ export interface IBoardDto {
     created?: Date;
 }
 
-export class CreateBoardCommand implements ICreateBoardCommand {
-    title?: string;
-
-    constructor(data?: ICreateBoardCommand) {
-        if (data) {
-            for (var property in data) {
-                if (data.hasOwnProperty(property))
-                    (<any>this)[property] = (<any>data)[property];
-            }
-        }
-    }
-
-    init(_data?: any) {
-        if (_data) {
-            this.title = _data["title"];
-        }
-    }
-
-    static fromJS(data: any): CreateBoardCommand {
-        data = typeof data === 'object' ? data : {};
-        let result = new CreateBoardCommand();
-        result.init(data);
-        return result;
-    }
-
-    toJSON(data?: any) {
-        data = typeof data === 'object' ? data : {};
-        data["title"] = this.title;
-        return data;
-    }
-}
-
-export interface ICreateBoardCommand {
-    title?: string;
-}
-
 export class UpdateBoardTitleCommand implements IUpdateBoardTitleCommand {
     id?: string;
     title?: string;
@@ -1407,6 +1738,218 @@ export class AddPageCommand implements IAddPageCommand {
 
 export interface IAddPageCommand {
     boardId?: string;
+}
+
+export class BoardMemberDto implements IBoardMemberDto {
+
+    constructor(data?: IBoardMemberDto) {
+        if (data) {
+            for (var property in data) {
+                if (data.hasOwnProperty(property))
+                    (<any>this)[property] = (<any>data)[property];
+            }
+        }
+    }
+
+    init(_data?: any) {
+    }
+
+    static fromJS(data: any): BoardMemberDto {
+        data = typeof data === 'object' ? data : {};
+        let result = new BoardMemberDto();
+        result.init(data);
+        return result;
+    }
+
+    toJSON(data?: any) {
+        data = typeof data === 'object' ? data : {};
+        return data;
+    }
+}
+
+export interface IBoardMemberDto {
+}
+
+export class UserDto implements IUserDto {
+    id?: string;
+    email?: string;
+    displayName?: string;
+
+    constructor(data?: IUserDto) {
+        if (data) {
+            for (var property in data) {
+                if (data.hasOwnProperty(property))
+                    (<any>this)[property] = (<any>data)[property];
+            }
+        }
+    }
+
+    init(_data?: any) {
+        if (_data) {
+            this.id = _data["id"];
+            this.email = _data["email"];
+            this.displayName = _data["displayName"];
+        }
+    }
+
+    static fromJS(data: any): UserDto {
+        data = typeof data === 'object' ? data : {};
+        let result = new UserDto();
+        result.init(data);
+        return result;
+    }
+
+    toJSON(data?: any) {
+        data = typeof data === 'object' ? data : {};
+        data["id"] = this.id;
+        data["email"] = this.email;
+        data["displayName"] = this.displayName;
+        return data;
+    }
+}
+
+export interface IUserDto {
+    id?: string;
+    email?: string;
+    displayName?: string;
+}
+
+export class InvitationDto implements IInvitationDto {
+    invitationId?: string;
+    boardTitle?: string;
+    boardId?: string;
+    requestedRole?: MemberRole;
+    createdUtc?: Date | undefined;
+
+    constructor(data?: IInvitationDto) {
+        if (data) {
+            for (var property in data) {
+                if (data.hasOwnProperty(property))
+                    (<any>this)[property] = (<any>data)[property];
+            }
+        }
+    }
+
+    init(_data?: any) {
+        if (_data) {
+            this.invitationId = _data["invitationId"];
+            this.boardTitle = _data["boardTitle"];
+            this.boardId = _data["boardId"];
+            this.requestedRole = _data["requestedRole"];
+            this.createdUtc = _data["createdUtc"] ? new Date(_data["createdUtc"].toString()) : <any>undefined;
+        }
+    }
+
+    static fromJS(data: any): InvitationDto {
+        data = typeof data === 'object' ? data : {};
+        let result = new InvitationDto();
+        result.init(data);
+        return result;
+    }
+
+    toJSON(data?: any) {
+        data = typeof data === 'object' ? data : {};
+        data["invitationId"] = this.invitationId;
+        data["boardTitle"] = this.boardTitle;
+        data["boardId"] = this.boardId;
+        data["requestedRole"] = this.requestedRole;
+        data["createdUtc"] = this.createdUtc ? this.createdUtc.toISOString() : <any>undefined;
+        return data;
+    }
+}
+
+export interface IInvitationDto {
+    invitationId?: string;
+    boardTitle?: string;
+    boardId?: string;
+    requestedRole?: MemberRole;
+    createdUtc?: Date | undefined;
+}
+
+export enum MemberRole {
+    Viewer = 0,
+    Editor = 1,
+    Owner = 2,
+}
+
+export class InviteMemberCommand implements IInviteMemberCommand {
+    boardId?: string;
+    targetUserEmail?: string;
+    role?: MemberRole;
+
+    constructor(data?: IInviteMemberCommand) {
+        if (data) {
+            for (var property in data) {
+                if (data.hasOwnProperty(property))
+                    (<any>this)[property] = (<any>data)[property];
+            }
+        }
+    }
+
+    init(_data?: any) {
+        if (_data) {
+            this.boardId = _data["boardId"];
+            this.targetUserEmail = _data["targetUserEmail"];
+            this.role = _data["role"];
+        }
+    }
+
+    static fromJS(data: any): InviteMemberCommand {
+        data = typeof data === 'object' ? data : {};
+        let result = new InviteMemberCommand();
+        result.init(data);
+        return result;
+    }
+
+    toJSON(data?: any) {
+        data = typeof data === 'object' ? data : {};
+        data["boardId"] = this.boardId;
+        data["targetUserEmail"] = this.targetUserEmail;
+        data["role"] = this.role;
+        return data;
+    }
+}
+
+export interface IInviteMemberCommand {
+    boardId?: string;
+    targetUserEmail?: string;
+    role?: MemberRole;
+}
+
+export class RejectInvitationCommand implements IRejectInvitationCommand {
+    invitationId?: string;
+
+    constructor(data?: IRejectInvitationCommand) {
+        if (data) {
+            for (var property in data) {
+                if (data.hasOwnProperty(property))
+                    (<any>this)[property] = (<any>data)[property];
+            }
+        }
+    }
+
+    init(_data?: any) {
+        if (_data) {
+            this.invitationId = _data["invitationId"];
+        }
+    }
+
+    static fromJS(data: any): RejectInvitationCommand {
+        data = typeof data === 'object' ? data : {};
+        let result = new RejectInvitationCommand();
+        result.init(data);
+        return result;
+    }
+
+    toJSON(data?: any) {
+        data = typeof data === 'object' ? data : {};
+        data["invitationId"] = this.invitationId;
+        return data;
+    }
+}
+
+export interface IRejectInvitationCommand {
+    invitationId?: string;
 }
 
 export class PaginatedListOfChatMessageDto implements IPaginatedListOfChatMessageDto {

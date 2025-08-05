@@ -7,17 +7,24 @@ public class CollabHub : Hub<ICollabClient>
 {
     public override async Task OnConnectedAsync()
     {
-        // Notify everyone (including the caller) that a new user is online
+        // Extract user info from the ClaimsPrincipal (assuming authentication is configured)
+        var userName = Context.User?.Identity?.Name ?? "Anonymous";
+
+        // Optionally extract user ID claim, e.g.:
+        var userId = Context.User?.FindFirst("sub")?.Value ?? Context.ConnectionId;
+
+        // Notify everyone (including the caller) that a new user is online with actual info
         await Clients.All.UserPresenceChanged(new UserPresenceDto
         {
             ConnectionId = Context.ConnectionId,
-            UserName = "Anonymous",          // or pull from auth context
-            Color = "#999",
+            UserName = userName,
+            Color = "#999",  // You can generate or store user colors elsewhere
             Tool = "select"
         });
 
         await base.OnConnectedAsync();
     }
+
     public async Task UpdatePresence(UserPresenceDto dto)
     {
         dto.ConnectionId = Context.ConnectionId;
@@ -38,6 +45,15 @@ public class CollabHub : Hub<ICollabClient>
 
     public async Task BroadcastYjsUpdate(byte[] update)
        => await Clients.Others.SyncYjsUpdate(update);
+
+    public async Task BroadcastAwareness(string roomId, byte[] update)
+    {
+        // Forward the raw update to all others in the same room (or all if no groups)
+        await Clients.Others.SendAsync("SyncAwareness", roomId, update);
+    }
+
+
+
 }
 
 public interface ICollabClient
@@ -46,7 +62,16 @@ public interface ICollabClient
     Task UserCursorMoved(CursorDto dto);
     Task UserDisconnected(string connectionId);
     Task SyncYjsUpdate(byte[] update);
+
+    Task SendAsync(string name, string roomId, byte[] update);
 }
+
+public class AwarenessState
+{
+    public int clientId { get; set; }
+    public object? state { get; set; }
+}
+
 
 public class UserPresenceDto
 {

@@ -1,11 +1,12 @@
 import { Component, OnInit } from '@angular/core';
 import { Router } from '@angular/router';
 import {
-  IBoardsClient,
   CreateBoardCommand,
   UpdateBoardTitleCommand,
   BoardSummaryDto,
-  BoardsClient
+  Client,
+  BoardsClient,
+
 } from 'src/app/web-api-client';
 
 @Component({

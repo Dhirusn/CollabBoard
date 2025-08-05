@@ -1,11 +1,27 @@
-<div class="chat-panel">
-  <div class="messages">
-    <div *ngFor="let msg of messages" class="message">
-      <strong>{{ msg.sender }}:</strong> {{ msg.text }}
-    </div>
-  </div>
-  <div class="input-box">
-    <input [(ngModel)]="newMessage" placeholder="Type a message..." />
-    <button (click)="sendMessage()">Send</button>
+<!-- existing chat markup ... -->
+
+<!-- User search + invite -->
+<hr />
+<div class="invite-box">
+  <input
+    type="text"
+    placeholder="Search user by email…"
+    [formControl]="searchCtrl"
+  />
+
+  <!-- dropdown -->
+  <ul *ngIf="foundUsers.length" class="user-list">
+    <li
+      *ngFor="let u of foundUsers"
+      (click)="selectedUser = u; foundUsers = []"
+    >
+      {{ u.displayName }} ({{ u.email }})
+    </li>
+  </ul>
+
+  <!-- selected -->
+  <div *ngIf="selectedUser">
+    Inviting: <strong>{{ selectedUser.displayName }} ({{ selectedUser.email }})</strong>
+    <button (click)="inviteSelectedUser()">Send Invite</button>
   </div>
 </div>

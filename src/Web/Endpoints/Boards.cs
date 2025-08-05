@@ -1,14 +1,20 @@
 ﻿// CollabBoard.Web.Endpoints.Boards.cs  
 using System.Security.Claims;
+using CollabBoard.Application.Boards.Commands.AcceptInvitation;
 using CollabBoard.Application.Boards.Commands.AddPage;
 using CollabBoard.Application.Boards.Commands.CreateBoard;
 using CollabBoard.Application.Boards.Commands.DeleteBoard;
+using CollabBoard.Application.Boards.Commands.InviteMember;
+using CollabBoard.Application.Boards.Commands.JoinBoard;
+using CollabBoard.Application.Boards.Commands.RejectInvitation;
 using CollabBoard.Application.Boards.Commands.SendChatMessage;
 using CollabBoard.Application.Boards.Commands.UpdateBoardTitle;
 using CollabBoard.Application.Boards.Queries.GetBoardByIdQuery;
 using CollabBoard.Application.Boards.Queries.GetBoardMembers;
 using CollabBoard.Application.Boards.Queries.GetBoardsForUserQuery;
 using CollabBoard.Application.Boards.Queries.GetBoardSnapshot;
+using CollabBoard.Application.Boards.Queries.GetMyInvitationsQuery;
+using CollabBoard.Application.Boards.Queries.SearchUsersQuery;
 using CollabBoard.Application.Chat.Queries.GetChatMessages;
 using CollabBoard.Application.Common.Models;
 using Microsoft.AspNetCore.Http.HttpResults;
@@ -20,35 +26,43 @@ public class Boards : EndpointGroupBase
     public override void Map(WebApplication app)
     {
         app.MapGroup(this)
-            .RequireAuthorization()
-            .MapGet(GetBoardsForUser, "")
-            .MapGet(GetBoardSnapshot, "{id:guid}/snapshot")
-            .MapGet(GetBoardById, "{id:guid}")
-            .MapPost(CreateBoard, "")
-            .MapPut(UpdateBoardTitle, "{id:guid}/title")
-            .MapDelete(DeleteBoard, "{id:guid}")
+     .RequireAuthorization()
 
-            // Pages  
-            .MapPost(AddPage, "{id:guid}/pages")
+     // Board CRUD
+     .MapGet(GetBoardsForUser, "")
+     .MapPost(CreateBoard, "")
+     .MapGet(GetBoardSnapshot, "{id:guid}/snapshot")
+     .MapGet(GetBoardById, "{id:guid}")
+     .MapPut(UpdateBoardTitle, "{id:guid}/title")
+     .MapDelete(DeleteBoard, "{id:guid}")
 
-            // Content blocks  
-            //.MapPost(AddContentBlock, "{boardId:guid}/pages/{pageId:guid}/blocks")
-            //.MapPut(UpdateContentBlock, "{boardId:guid}/pages/{pageId:guid}/blocks/{blockId:guid}")
-            //.MapDelete(DeleteContentBlock, "{boardId:guid}/pages/{pageId:guid}/blocks/{blockId:guid}")
+     // Pages  
+     .MapPost(AddPage, "{id:guid}/pages")
 
-            //// Operation log / undo-redo  
-            //.MapGet(GetOperationLog, "{id:guid}/operations")
-            //.MapPost(Undo, "{id:guid}/undo")
-            //.MapPost(Redo, "{id:guid}/redo")
+     // Content blocks  
+     //.MapPost(AddContentBlock, "{id:guid}/pages/{pageId:guid}/blocks")
+     //.MapPut(UpdateContentBlock, "{id:guid}/pages/{pageId:guid}/blocks/{blockId:guid}")
+     //.MapDelete(DeleteContentBlock, "{id:guid}/pages/{pageId:guid}/blocks/{blockId:guid}")
 
-            //// Members  
-            //.MapGet(GetBoardMembers, "{id:guid}/members")
-            //.MapPost(AddBoardMember, "{id:guid}/members")
-            //.MapDelete(RemoveBoardMember, "{id:guid}/members/{memberId:guid}")
+     // Operation log / undo-redo  
+     //.MapGet(GetOperationLog, "{id:guid}/operations")
+     //.MapPost(Undo, "{id:guid}/undo")
+     //.MapPost(Redo, "{id:guid}/redo")
 
-            // Chat  
-            .MapGet(GetChatMessages, "{id:guid}/chat")
-            .MapPost(SendChatMessage, "{id:guid}/chat");
+     // Members  
+     .MapGet(GetBoardMembers, "{id:guid}/members")
+     .MapGet(SearchUsers, "searchmembers")
+     .MapGet(GetMyInvitations, "myInvitations")
+     .MapPost(RequestBoardMember, "requestinvite")
+     .MapPost(AcceptInvitation, "{id:guid}/accept")
+     .MapPost(RejectInvitation, "{id:guid}/members/{memberId:guid}/reject")
+
+     // Chat  
+     .MapGet(GetChatMessages, "{id:guid}/chat")
+     .MapPost(SendChatMessage, "{id:guid}/chat");
+
+
+
     }
 
     public async Task<Ok<BoardSnapshotDto>> GetBoardSnapshot(ISender sender, string id)
@@ -156,19 +170,36 @@ public class Boards : EndpointGroupBase
         return TypedResults.Ok(members);
     }
 
-    //public async Task<Created<Guid>> AddBoardMember(
-    //    ISender sender, Guid id, AddBoardMemberCommand command)
-    //{
-    //    command = command with { BoardId = id };
-    //    var memberId = await sender.Send(command);
-    //    return TypedResults.Created($"/boards/{id}/members/{memberId}", memberId);
-    //}
+    public async Task<Ok<List<UserDto>>> SearchUsers(ISender sender, string query)
+    {
+        var result = await sender.Send(new SearchUsersQuery(query));
+        return TypedResults.Ok(result);
+    }
 
-    //public async Task<NoContent> RemoveBoardMember(ISender sender, Guid id, Guid memberId)
-    //{
-    //    await sender.Send(new RemoveBoardMemberCommand(id, memberId));
-    //    return TypedResults.NoContent();
-    //}
+    public async Task<Ok<Guid>> RequestBoardMember(ISender sender, InviteMemberCommand command)
+    {
+        var result = await sender.Send(command);
+        return TypedResults.Ok(result);
+    }
+
+    public async Task<Ok<List<InvitationDto>>> GetMyInvitations(ISender sender)
+    {
+        var members = await sender.Send(new GetMyInvitationsQuery());
+        return TypedResults.Ok(members);
+    }
+
+
+    public async Task<Created<Guid>> AcceptInvitation(ISender sender, Guid id)
+    {
+        var memberId = await sender.Send((new AcceptInvitationCommand(id)));
+        return TypedResults.Created($"/boards/{memberId}/members/{memberId}", memberId);
+    }
+
+    public async Task<NoContent> RejectInvitation(ISender sender, RejectInvitationCommand command)
+    {
+        await sender.Send(command);
+        return TypedResults.NoContent();
+    }
 
     // ---------------- Chat ----------------  
 

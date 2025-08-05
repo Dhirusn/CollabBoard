@@ -1,0 +1,18 @@
+<div class="invitations">
+  <h2>Pending Board Invitations</h2>
+
+  <div *ngIf="(invitations$ | async)?.length === 0">No pending invitations.</div>
+
+  <div *ngFor="let i of invitations$ | async" class="card">
+    <div>
+      <strong>{{ i.boardTitle }}</strong><br />
+      Role: {{ [i.requestedRole] }}<br />
+      Invited: {{ i.createdUtc | date:'short' }}
+    </div>
+
+    <div class="actions">
+      <button (click)="accept(i.invitationId)" class="accept">Accept</button>
+      <button (click)="reject(i.invitationId)" class="reject">Reject</button>
+    </div>
+  </div>
+</div>
