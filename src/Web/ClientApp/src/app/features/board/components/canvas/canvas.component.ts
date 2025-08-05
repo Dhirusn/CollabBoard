@@ -7,6 +7,10 @@ import { ToolService } from 'src/app/core/services/tool.service';
 import * as Y from 'yjs';
 import { Awareness } from 'y-protocols/awareness';
 type LogEntry = { action: string; shape: any; attrs?: any };
+import * as mutex from 'lib0/mutex';
+import { debounce } from 'lodash';
+
+const updateMutex = mutex.createMutex();
 
 @Component({
   selector: 'app-canvas',
@@ -87,19 +91,29 @@ export class CanvasComponent implements AfterViewInit, OnDestroy {
   private bindKonvaToYjs() {
     // Apply remote updates to Konva layer
     this.konvaMap.observeDeep(() => {
-      this.layer.destroyChildren();
-
-      const tree = this.konvaMap.get('root') || [];
-      tree.forEach(nodeObj => this.layer.add(Konva.Node.create(nodeObj)));
-
-      this.layer.draw();
+      updateMutex(() => {
+        this.layer.destroyChildren();
+        const tree = this.konvaMap.get('root') || [];
+        tree.forEach(nodeObj => this.layer.add(Konva.Node.create(nodeObj)));
+        this.layer.draw();
+      });
     });
+
 
     // Push local changes to Yjs map
     const push = () => {
-      const json = this.stage.toJSON();
-      this.konvaMap.set('root', JSON.parse(json).children[0].children);
+      updateMutex(() => {
+        const json = this.stage.toJSON();
+        const children = JSON.parse(json).children?.[0]?.children || [];
+
+        const existing = this.konvaMap.get('root');
+        if (JSON.stringify(existing) !== JSON.stringify(children)) {
+          this.konvaMap.set('root', children);
+        }
+      });
     };
+
+
 
     this.layer.on('add remove dragend transformend', push);
   }

@@ -3,7 +3,9 @@ import { BehaviorSubject, Observable } from 'rxjs';
 import { HubConnectionBuilder, HubConnection, LogLevel } from '@microsoft/signalr';
 import * as Y from 'yjs';
 import { Awareness } from 'y-protocols/awareness';
+import * as mutex from 'lib0/mutex';
 
+const updateMutex = mutex.createMutex();
 interface SignalRUser {
   connectionId: string;
   userName: string;
@@ -33,8 +35,49 @@ export class ToolService {
       .build();
 
     this.hub.start()
-      .then(() => console.log('SignalR connected'))
-      .catch(err => console.error('SignalR connection error:', err));
+      .then(() => {
+        console.log('SignalR connected');
+        /* --- 2. join the ydoc group --- */
+        return this.hub.invoke('JoinYDoc');
+      })
+      .catch(err => console.error(err));
+
+    /* --- 1. apply remote updates from SignalR --- */
+   this.hub.on('SyncYjsUpdate', (base64: string) => {
+  updateMutex(() => {
+    const bytes = Uint8Array.from(atob(base64), c => c.charCodeAt(0));
+    Y.applyUpdate(this.doc, bytes);
+  });
+});
+
+
+    /* --- 2. listen to local changes only --- */
+    // this.doc.on('update', (update: Uint8Array, origin: any) => {
+    //   updateMutex(() => {
+    //     if (this.hub.state === 'Connected') {
+    //       this.hub.invoke('SendYjsUpdate', update.buffer).catch(console.error);
+    //     }
+    //   });
+    // });
+
+    /* --- 4. incoming cursor move --- */
+    this.hub.on('userCursorMoved', (dto: { connectionId: string; x: number; y: number }) => {
+      // draw / move the remote cursor here
+      //console.log('cursor', dto.connectionId, dto.x, dto.y);
+    });
+
+    /* --- 5. incoming awareness update --- */
+    this.doc.on('update', (update: Uint8Array) => {
+      if (!(update instanceof Uint8Array)) {
+        console.error('Invalid update payload', update);
+        return;
+      }
+
+      if (this.hub.state === 'Connected') {
+        this.hub.invoke('SendYjsUpdate', this.toBase64(update)).catch(console.error);
+      }
+    });
+
 
     // Handle incoming presence updates from other users
     this.hub.on('UserPresenceChanged', (dto: SignalRUser) => {
@@ -88,7 +131,9 @@ export class ToolService {
   }
 
   moveCursor(x: number, y: number): void {
-    this.hub.invoke('MoveCursor', { x, y }).catch(console.error);
+    if (this.hub.state === 'Connected') {
+      this.hub.invoke('MoveCursor', { x, y }).catch(console.error);
+    } // silently drop or queue otherwise
   }
 
   getYDoc(): Y.Doc {
@@ -103,4 +148,12 @@ export class ToolService {
   get currentTool(): string {
     return this.tool$.value;
   }
+
+  toBase64(u8: Uint8Array): string {
+  let binary = '';
+  for (let i = 0; i < u8.byteLength; i++) {
+    binary += String.fromCharCode(u8[i]);
+  }
+  return btoa(binary);
+}
 }

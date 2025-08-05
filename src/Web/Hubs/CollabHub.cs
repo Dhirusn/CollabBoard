@@ -1,10 +1,14 @@
 ﻿using Microsoft.AspNetCore.SignalR;
-using static CollabBoard.Web.Hubs.CollabHub;
 
 namespace CollabBoard.Web.Hubs;
 
 public class CollabHub : Hub<ICollabClient>
 {
+    private readonly ILogger<CollabHub> _logger;
+    public CollabHub(ILogger<CollabHub> logger)
+    {
+        _logger = logger;
+    }
     public override async Task OnConnectedAsync()
     {
         // Extract user info from the ClaimsPrincipal (assuming authentication is configured)
@@ -27,15 +31,22 @@ public class CollabHub : Hub<ICollabClient>
 
     public async Task UpdatePresence(UserPresenceDto dto)
     {
+        var userName = Context.User?.Identity?.Name ?? "Anonymous";
+
+        // Optionally extract user ID claim, e.g.:
+        var userId = Context.User?.FindFirst("sub")?.Value ?? Context.ConnectionId;
         dto.ConnectionId = Context.ConnectionId;
-        await Clients.Others.UserPresenceChanged(dto);
+        await Clients.Others.UserPresenceChanged(new UserPresenceDto
+        {
+            ConnectionId = Context.ConnectionId,
+            UserName = userName,
+            Color = "#999",  // You can generate or store user colors elsewhere
+            Tool = "select"
+        });
     }
 
-    public async Task MoveCursor(CursorDto cursor)
-    {
-        cursor.ConnectionId = Context.ConnectionId;
-        await Clients.Others.UserCursorMoved(cursor);
-    }
+    public async Task MoveCursor(CursorDto dto)
+       => await Clients.Others.UserCursorMoved(dto);
 
     public override async Task OnDisconnectedAsync(Exception? exception)
     {
@@ -46,13 +57,24 @@ public class CollabHub : Hub<ICollabClient>
     public async Task BroadcastYjsUpdate(byte[] update)
        => await Clients.Others.SyncYjsUpdate(update);
 
-    public async Task BroadcastAwareness(string roomId, byte[] update)
+    public async Task JoinYDoc()
     {
-        // Forward the raw update to all others in the same room (or all if no groups)
-        await Clients.Others.SendAsync("SyncAwareness", roomId, update);
+        await Groups.AddToGroupAsync(Context.ConnectionId, "ydoc");
     }
 
+    public async Task SendYjsUpdate(string base64Update)
+    {
+        var update = Convert.FromBase64String(base64Update);
 
+        const int maxUpdateSize = 500_000;
+        if (update.Length > maxUpdateSize)
+        {
+            _logger.LogWarning("Ignoring large update: {0} bytes", update.Length);
+            return;
+        }
+
+        await Clients.OthersInGroup("ydoc").SyncYjsUpdate(update);
+    }
 
 }
 
@@ -62,8 +84,7 @@ public interface ICollabClient
     Task UserCursorMoved(CursorDto dto);
     Task UserDisconnected(string connectionId);
     Task SyncYjsUpdate(byte[] update);
-
-    Task SendAsync(string name, string roomId, byte[] update);
+    Task SyncAwareness(byte[] update);   // ← add this if you need it
 }
 
 public class AwarenessState

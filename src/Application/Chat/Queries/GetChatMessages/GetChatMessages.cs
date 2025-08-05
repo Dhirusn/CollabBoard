@@ -1,4 +1,5 @@
-﻿using CollabBoard.Application.Common.Interfaces;
+﻿using System;
+using CollabBoard.Application.Common.Interfaces;
 using CollabBoard.Application.Common.Models;
 
 namespace CollabBoard.Application.Chat.Queries.GetChatMessages;
@@ -21,8 +22,11 @@ public class GetChatMessagesQueryHandler : IRequestHandler<GetChatMessagesQuery,
         _context = context;
     }
 
-    public Task<PaginatedList<ChatMessageDto>> Handle(GetChatMessagesQuery request, CancellationToken cancellationToken)
+    public async Task<PaginatedList<ChatMessageDto>> Handle(GetChatMessagesQuery request, CancellationToken cancellationToken)
     {
-        throw new NotImplementedException();
+        await Task.Delay(3);
+        List<ChatMessageDto> chat = [];
+        var result = new PaginatedList<ChatMessageDto>(chat,1,1,1);
+        return result!;
     }
 }

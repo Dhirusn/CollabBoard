@@ -45,7 +45,10 @@ public static class DependencyInjection
 
         });
 
-        builder.Services.AddSignalR();
+        builder.Services.AddSignalR(opt =>
+        {
+            opt.EnableDetailedErrors = true;
+        });
 
         builder.Services.AddCors(o => o.AddPolicy("CORS", policy => policy
         .WithOrigins(["https://localhost:4200", "http://localhost:4200"])
