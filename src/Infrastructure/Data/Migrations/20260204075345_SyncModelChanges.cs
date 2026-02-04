@@ -4,10 +4,10 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
 #nullable disable
 
-namespace CollabBoard.Infrastructure.Data.Migrations
+namespace CollabBoard.Infrastructure.data.migrations
 {
     /// <inheritdoc />
-    public partial class InitialMigration : Migration
+    public partial class SyncModelChanges : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
@@ -233,7 +233,46 @@ namespace CollabBoard.Infrastructure.Data.Migrations
                 });
 
             migrationBuilder.CreateTable(
-                name: "BoardsMember",
+                name: "BoardInvitations",
+                columns: table => new
+                {
+                    Id = table.Column<Guid>(type: "uuid", nullable: false),
+                    BoardId = table.Column<Guid>(type: "uuid", nullable: false),
+                    InvitedByUserId = table.Column<string>(type: "text", nullable: false),
+                    TargetUserId = table.Column<string>(type: "text", nullable: false),
+                    RequestedRole = table.Column<string>(type: "character varying(20)", maxLength: 20, nullable: false),
+                    Status = table.Column<string>(type: "character varying(20)", maxLength: 20, nullable: false),
+                    RespondedUtc = table.Column<DateTime>(type: "timestamp with time zone", nullable: true),
+                    Created = table.Column<DateTimeOffset>(type: "timestamp with time zone", nullable: false),
+                    CreatedBy = table.Column<string>(type: "text", nullable: true),
+                    LastModified = table.Column<DateTimeOffset>(type: "timestamp with time zone", nullable: false),
+                    LastModifiedBy = table.Column<string>(type: "text", nullable: true)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_BoardInvitations", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_BoardInvitations_AspNetUsers_InvitedByUserId",
+                        column: x => x.InvitedByUserId,
+                        principalTable: "AspNetUsers",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Restrict);
+                    table.ForeignKey(
+                        name: "FK_BoardInvitations_AspNetUsers_TargetUserId",
+                        column: x => x.TargetUserId,
+                        principalTable: "AspNetUsers",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Restrict);
+                    table.ForeignKey(
+                        name: "FK_BoardInvitations_Boards_BoardId",
+                        column: x => x.BoardId,
+                        principalTable: "Boards",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "BoardsMembers",
                 columns: table => new
                 {
                     Id = table.Column<Guid>(type: "uuid", nullable: false),
@@ -248,15 +287,15 @@ namespace CollabBoard.Infrastructure.Data.Migrations
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_BoardsMember", x => x.Id);
+                    table.PrimaryKey("PK_BoardsMembers", x => x.Id);
                     table.ForeignKey(
-                        name: "FK_BoardsMember_AspNetUsers_UserId",
+                        name: "FK_BoardsMembers_AspNetUsers_UserId",
                         column: x => x.UserId,
                         principalTable: "AspNetUsers",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
                     table.ForeignKey(
-                        name: "FK_BoardsMember_Boards_BoardId",
+                        name: "FK_BoardsMembers_Boards_BoardId",
                         column: x => x.BoardId,
                         principalTable: "Boards",
                         principalColumn: "Id",
@@ -357,8 +396,8 @@ namespace CollabBoard.Infrastructure.Data.Migrations
                     Id = table.Column<Guid>(type: "uuid", nullable: false),
                     BoardId = table.Column<Guid>(type: "uuid", nullable: false),
                     PagesBlob = table.Column<string>(type: "jsonb", nullable: false),
+                    YjsState = table.Column<string>(type: "text", nullable: true),
                     TakenUtc = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
-                    BoardId1 = table.Column<Guid>(type: "uuid", nullable: true),
                     Created = table.Column<DateTimeOffset>(type: "timestamp with time zone", nullable: false),
                     CreatedBy = table.Column<string>(type: "text", nullable: true),
                     LastModified = table.Column<DateTimeOffset>(type: "timestamp with time zone", nullable: false),
@@ -373,11 +412,6 @@ namespace CollabBoard.Infrastructure.Data.Migrations
                         principalTable: "Boards",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
-                    table.ForeignKey(
-                        name: "FK_Snapshots_Boards_BoardId1",
-                        column: x => x.BoardId1,
-                        principalTable: "Boards",
-                        principalColumn: "Id");
                 });
 
             migrationBuilder.CreateTable(
@@ -451,19 +485,34 @@ namespace CollabBoard.Infrastructure.Data.Migrations
                 unique: true);
 
             migrationBuilder.CreateIndex(
+                name: "IX_BoardInvitation_Board_Target_Status",
+                table: "BoardInvitations",
+                columns: new[] { "BoardId", "TargetUserId", "Status" });
+
+            migrationBuilder.CreateIndex(
+                name: "IX_BoardInvitations_InvitedByUserId",
+                table: "BoardInvitations",
+                column: "InvitedByUserId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_BoardInvitations_TargetUserId",
+                table: "BoardInvitations",
+                column: "TargetUserId");
+
+            migrationBuilder.CreateIndex(
                 name: "IX_Boards_OwnerId",
                 table: "Boards",
                 column: "OwnerId");
 
             migrationBuilder.CreateIndex(
-                name: "IX_BoardsMember_BoardId_UserId",
-                table: "BoardsMember",
+                name: "IX_BoardsMembers_BoardId_UserId",
+                table: "BoardsMembers",
                 columns: new[] { "BoardId", "UserId" },
                 unique: true);
 
             migrationBuilder.CreateIndex(
-                name: "IX_BoardsMember_UserId",
-                table: "BoardsMember",
+                name: "IX_BoardsMembers_UserId",
+                table: "BoardsMembers",
                 column: "UserId");
 
             migrationBuilder.CreateIndex(
@@ -511,11 +560,6 @@ namespace CollabBoard.Infrastructure.Data.Migrations
                 columns: new[] { "BoardId", "TakenUtc" });
 
             migrationBuilder.CreateIndex(
-                name: "IX_Snapshots_BoardId1",
-                table: "Snapshots",
-                column: "BoardId1");
-
-            migrationBuilder.CreateIndex(
                 name: "IX_TodoItems_ListId",
                 table: "TodoItems",
                 column: "ListId");
@@ -540,7 +584,10 @@ namespace CollabBoard.Infrastructure.Data.Migrations
                 name: "AspNetUserTokens");
 
             migrationBuilder.DropTable(
-                name: "BoardsMember");
+                name: "BoardInvitations");
+
+            migrationBuilder.DropTable(
+                name: "BoardsMembers");
 
             migrationBuilder.DropTable(
                 name: "ChatMessages");

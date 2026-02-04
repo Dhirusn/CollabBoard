@@ -20,7 +20,7 @@ const routes: Routes = [
             { path: 'counter', component: CounterComponent },
             { path: 'fetch-data', component: FetchDataComponent },
             { path: 'todo', component: TodoComponent },
-            { path: 'board-list', loadChildren: () => import('./features/board-list/board-list.module').then(m => m.BoardListModule) },
+            { path: 'board-list',loadChildren: () => import('./features/board-list/board-list.module').then(m => m.BoardListModule) },
             { path: 'board', loadChildren: () => import('./features/board/board.module').then(m => m.BoardModule) }
         ]
 @NgModule({

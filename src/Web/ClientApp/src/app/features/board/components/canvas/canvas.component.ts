@@ -9,6 +9,7 @@ import { Awareness } from 'y-protocols/awareness';
 type LogEntry = { action: string; shape: any; attrs?: any };
 import * as mutex from 'lib0/mutex';
 import { debounce } from 'lodash';
+import { ActivatedRoute } from '@angular/router';
 
 const updateMutex = mutex.createMutex();
 
@@ -41,9 +42,16 @@ export class CanvasComponent implements AfterViewInit, OnDestroy {
     }
   }
 
-  constructor(public toolSvc: ToolService) { }
+  constructor(public toolSvc: ToolService, private route: ActivatedRoute) { }
 
   ngAfterViewInit(): void {
+
+    const boardId = this.route.snapshot.paramMap.get('id'); // 'id' should match your route config
+
+    if (boardId) {
+      this.toolSvc.connectToHub(boardId); // 👈 Pass to ToolService
+    }
+
     // Get shared Yjs doc and awareness from ToolService
     this.ydoc = this.toolSvc.getYDoc();
     this.awareness = this.toolSvc.getAwareness();

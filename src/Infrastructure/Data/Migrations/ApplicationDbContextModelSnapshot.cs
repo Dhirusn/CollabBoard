@@ -8,7 +8,7 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
 #nullable disable
 
-namespace CollabBoard.Infrastructure.Data.Migrations
+namespace CollabBoard.Infrastructure.data.migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
     partial class ApplicationDbContextModelSnapshot : ModelSnapshot
@@ -444,9 +444,6 @@ namespace CollabBoard.Infrastructure.Data.Migrations
                     b.Property<Guid>("BoardId")
                         .HasColumnType("uuid");
 
-                    b.Property<Guid?>("BoardId1")
-                        .HasColumnType("uuid");
-
                     b.Property<DateTimeOffset>("Created")
                         .HasColumnType("timestamp with time zone");
 
@@ -466,9 +463,11 @@ namespace CollabBoard.Infrastructure.Data.Migrations
                     b.Property<DateTime>("TakenUtc")
                         .HasColumnType("timestamp with time zone");
 
-                    b.HasKey("Id");
+                    b.Property<string>("YjsState")
+                        .HasColumnType("text")
+                        .HasColumnName("YjsState");
 
-                    b.HasIndex("BoardId1");
+                    b.HasKey("Id");
 
                     b.HasIndex("BoardId", "TakenUtc");
 
@@ -798,14 +797,10 @@ namespace CollabBoard.Infrastructure.Data.Migrations
             modelBuilder.Entity("CollabBoard.Domain.Entities.Snapshot", b =>
                 {
                     b.HasOne("CollabBoard.Domain.Entities.Board", "Board")
-                        .WithMany()
+                        .WithMany("Snapshots")
                         .HasForeignKey("BoardId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
-
-                    b.HasOne("CollabBoard.Domain.Entities.Board", null)
-                        .WithMany("Snapshots")
-                        .HasForeignKey("BoardId1");
 
                     b.Navigation("Board");
                 });

@@ -2,6 +2,7 @@
 using CollabBoard.Application.Common.Interfaces;
 using CollabBoard.Infrastructure.Data;
 using CollabBoard.Web.Services;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Serilog;
 
@@ -26,6 +27,10 @@ public static class DependencyInjection
         builder.Services.AddDatabaseDeveloperPageExceptionFilter();
 
         builder.Services.AddScoped<IUser, CurrentUser>();
+
+        builder.Services.AddScoped<IBoardStore, SnapshotBoardStore>();
+
+        builder.Services.AddScoped<IAuthorizationHandler, BoardAccessHandler>();
 
         builder.Services.AddHttpContextAccessor();
 

@@ -11,6 +11,7 @@ interface SignalRUser {
   userName: string;
   color: string;
   tool: string;
+  boardId: string;
 }
 
 @Injectable({ providedIn: 'root' })
@@ -22,11 +23,14 @@ export class ToolService {
   private doc: Y.Doc;
   private awareness: Awareness;
   private hub: HubConnection;
+  private currentBoardId: string = '';
 
   constructor() {
     this.doc = new Y.Doc();
     this.awareness = new Awareness(this.doc);
-
+  }
+  connectToHub(boardId: string): void {
+    this.currentBoardId = boardId;
     /* 1️⃣ SignalR connection */
     this.hub = new HubConnectionBuilder()
       .withUrl('https://localhost:5001/hubs/collab')
@@ -38,17 +42,17 @@ export class ToolService {
       .then(() => {
         console.log('SignalR connected');
         /* --- 2. join the ydoc group --- */
-        return this.hub.invoke('JoinYDoc');
+        return this.hub.invoke('JoinYDoc',boardId);
       })
       .catch(err => console.error(err));
 
     /* --- 1. apply remote updates from SignalR --- */
-   this.hub.on('SyncYjsUpdate', (base64: string) => {
-  updateMutex(() => {
-    const bytes = Uint8Array.from(atob(base64), c => c.charCodeAt(0));
-    Y.applyUpdate(this.doc, bytes);
-  });
-});
+    this.hub.on('SyncYjsUpdate', (base64: string) => {
+      updateMutex(() => {
+        const bytes = Uint8Array.from(atob(base64), c => c.charCodeAt(0));
+        Y.applyUpdate(this.doc, bytes);
+      });
+    });
 
 
     /* --- 2. listen to local changes only --- */
@@ -150,10 +154,10 @@ export class ToolService {
   }
 
   toBase64(u8: Uint8Array): string {
-  let binary = '';
-  for (let i = 0; i < u8.byteLength; i++) {
-    binary += String.fromCharCode(u8[i]);
+    let binary = '';
+    for (let i = 0; i < u8.byteLength; i++) {
+      binary += String.fromCharCode(u8[i]);
+    }
+    return btoa(binary);
   }
-  return btoa(binary);
-}
 }

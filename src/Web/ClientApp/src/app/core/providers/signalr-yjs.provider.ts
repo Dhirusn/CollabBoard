@@ -41,7 +41,7 @@ export class SignalRYjsProvider {
 
         // 4. Send updates to server
         this.ydoc.on('update', update => {
-            this.connection.send('BroadcastUpdate', this.roomId, update);
+            this.connection.send('BroadcastYjsUpdate', this.roomId, update);
         });
 
         this.connection.start().then(() => {
